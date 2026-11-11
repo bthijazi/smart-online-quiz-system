@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="logo.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img
+                src="images/logo.jpg"
+                alt="Smart Quiz Logo"
+                class="project-logo project-logo-large"
+            >
+        </div>
+
+        <h1>Smart Quiz</h1>
+        <p class="subtitle">Sign in to your examination portal</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-button">Sign In</button>
+            <p id="loginMessage" role="alert" aria-live="polite"></p>
+        </form>
+
+        <p class="footer">Smart Online Quiz System &copy; 2026</p>
+
+        <details>
+            <summary>Demo accounts for testing</summary>
+
+            <p>Student: student@smartquiz.com</p>
+            <p>Password: Student123</p>
+            <hr>
+
+            <p>Instructor: instructor@smartquiz.com</p>
+            <p>Password: Instructor123</p>
+            <hr>
+
+            <p>Admin: admin@smartquiz.com</p>
+            <p>Password: Admin123</p>
+        </details>
+    </div>
+
+    <script>
+        "use strict";
+
+        const loginForm = document.getElementById("loginForm");
+        const loginMessage = document.getElementById("loginMessage");
+
+        const USERS_KEY = "smartQuizAdminUsers";
+
+        const demoAccounts = [
+            {
+                email: "student@smartquiz.com",
+                password: "Student123",
+                role: "student",
+                name: "Student Name",
+                page: "dashboard.html"
+            },
+            {
+                email: "instructor@smartquiz.com",
+                password: "Instructor123",
+                role: "instructor",
+                name: "Instructor",
+                page: "instructor-dashboard.html"
+            },
+            {
+                email: "admin@smartquiz.com",
+                password: "Admin123",
+                role: "admin",
+                name: "Administrator",
+                page: "admin-dashboard.html"
+            }
+        ];
+
+        function getCreatedUsers() {
+            try {
+                const storedUsers = JSON.parse(
+                    localStorage.getItem(USERS_KEY) || "[]"
+                );
+
+                return Array.isArray(storedUsers)
+                    ? storedUsers
+                    : [];
+            } catch (error) {
+                console.error("Could not load users:", error);
+                return [];
+            }
+        }
+
+        function getPageByRole(role) {
+            const pages = {
+                student: "dashboard.html",
+                instructor: "instructor-dashboard.html",
+                admin: "admin-dashboard.html"
+            };
+
+            return pages[role] || null;
+        }
+
+        loginForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            loginMessage.textContent = "";
+
+            const email = document.getElementById("email")
+                .value.trim().toLowerCase();
+
+            const password = document.getElementById("password").value;
+
+            const createdUsers = getCreatedUsers();
+
+            const allAccounts = [
+                ...demoAccounts,
+                ...createdUsers
+            ];
+
+            const account = allAccounts.find(function (user) {
+                return (
+                    typeof user.email === "string" &&
+                    user.email.trim().toLowerCase() === email &&
+                    user.password === password
+                );
+            });
+
+            if (!account) {
+                loginMessage.textContent =
+                    "Incorrect email or password. Please try again.";
+                loginMessage.style.color = "#dc2626";
+                return;
+            }
+
+            if (account.disabled === true) {
+                loginMessage.textContent =
+                    "This account has been disabled.";
+                loginMessage.style.color = "#dc2626";
+                return;
+            }
+
+            const destination = getPageByRole(account.role);
+
+            if (!destination) {
+                loginMessage.textContent = "Invalid account role.";
+                loginMessage.style.color = "#dc2626";
+                return;
+            }
+
+            let displayName = account.name || "User";
+
+            // Keep the existing demo student's profile behavior.
+            if (
+                account.role === "student" &&
+                account.email === "student@smartquiz.com"
+            ) {
+                try {
+                    const profile = JSON.parse(
+                        localStorage.getItem("studentProfile") || "{}"
+                    );
+
+                    if (profile.fullName) {
+                        displayName = profile.fullName;
+                    }
+                } catch (error) {
+                    console.error("Could not read student profile:", error);
+                }
+            }
+
+            sessionStorage.setItem(
+                "currentUser",
+                JSON.stringify({
+                    id: account.id || null,
+                    email: account.email,
+                    name: displayName,
+                    role: account.role
+                })
+            );
+
+            window.location.href = destination;
+        });
+    </script>
+</body>
+</html>

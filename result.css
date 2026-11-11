@@ -1,0 +1,196 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1e293b;
+}
+
+.topbar {
+    background: #ffffff;
+    padding: 18px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.back-link {
+    color: #475569;
+    text-decoration: none;
+}
+
+.container {
+    width: 90%;
+    max-width: 750px;
+    margin: 45px auto;
+}
+
+.result-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+}
+
+.result-icon {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 35px;
+    font-weight: bold;
+}
+
+.subtitle {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+h1 {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.quiz-title {
+    color: #64748b;
+    margin-bottom: 28px;
+}
+
+.score-circle {
+    width: 165px;
+    height: 165px;
+    border: 8px solid #dbeafe;
+    border-radius: 50%;
+    margin: 0 auto 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-circle span {
+    color: #2563eb;
+    font-size: 38px;
+    font-weight: bold;
+}
+
+.score-circle small {
+    color: #64748b;
+    margin-top: 5px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 25px;
+}
+
+.stat-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 10px;
+}
+
+.stat-box span {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.stat-box strong {
+    font-size: 25px;
+}
+
+.feedback {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 13px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.primary {
+    background: #2563eb;
+    color: white;
+}
+
+.secondary {
+    background: white;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+.note {
+    margin-top: 25px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+@media (max-width: 550px) {
+    .result-card {
+        padding: 30px 16px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+
+    .stats {
+        gap: 8px;
+    }
+
+    .stat-box {
+        padding: 14px 5px;
+    }
+
+    .stat-box strong {
+        font-size: 21px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
