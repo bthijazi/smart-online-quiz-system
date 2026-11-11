@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Review - Smart Quiz</title>
+    <link rel="stylesheet" href="review.css">
+    <script src="student-data.js"></script>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="dashboard.html" class="logo">Smart Quiz</a>
+        <a href="dashboard.html" class="back-link">Back to Dashboard</a>
+    </header>
+
+    <main class="container">
+
+        <section class="page-heading">
+            <p class="subtitle">QUIZ REVIEW</p>
+            <h1>Review Your Answers</h1>
+            <p id="quizTitle">Quiz Results</p>
+        </section>
+
+        <section class="summary">
+            <div class="summary-card">
+                <span>Your Score</span>
+                <h2 id="scorePercentage">0%</h2>
+            </div>
+
+            <div class="summary-card">
+                <span>Correct Answers</span>
+                <h2 id="correctCount">0 / 0</h2>
+            </div>
+
+            <div class="summary-card">
+                <span>Total Questions</span>
+                <h2 id="totalQuestions">0</h2>
+            </div>
+        </section>
+
+        <section id="questionsContainer"></section>
+
+        <div class="bottom-actions">
+            <a href="dashboard.html" class="btn secondary">
+                Back to Dashboard
+            </a>
+
+            <a href="quizzes.html" class="btn primary">
+                Choose Another Quiz
+            </a>
+        </div>
+
+        <p class="demo-note">
+            Reviews are stored locally for your account in this browser.
+        </p>
+
+    </main>
+
+    <script>
+        const savedData = window.StudentData ? window.StudentData.getSelectedReview() : null;
+
+        const container = document.getElementById("questionsContainer");
+
+        if (!savedData) {
+            document.getElementById("quizTitle").textContent =
+                "No submitted quiz found.";
+
+            container.innerHTML = `
+                <div class="question-card">
+                    <p>Please take and submit a quiz first.</p>
+                </div>
+            `;
+        } else {
+            const reviewData = savedData;
+            
+
+            const questions = reviewData.questions;
+            const userAnswers = reviewData.userAnswers;
+
+            document.getElementById("quizTitle").textContent =
+                reviewData.quizTitle;
+
+            document.getElementById("scorePercentage").textContent =
+                reviewData.percentage + "%";
+
+            document.getElementById("correctCount").textContent =
+                reviewData.correctAnswers + " / " +
+                reviewData.totalQuestions;
+
+            document.getElementById("totalQuestions").textContent =
+                reviewData.totalQuestions;
+
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+
+                const isAnswered =
+                    userAnswer !== null &&
+                    userAnswer !== undefined;
+
+                const isCorrect =
+                    isAnswered && userAnswer === question.answer;
+
+                const card = document.createElement("section");
+                card.className = "question-card";
+
+                const heading = document.createElement("div");
+                heading.className = "question-top";
+
+                const title = document.createElement("h3");
+                title.textContent = "Question " + (index + 1);
+
+                const status = document.createElement("span");
+                status.className = isCorrect ? "correct" : "incorrect";
+                status.textContent = isCorrect
+                    ? "Correct"
+                    : isAnswered
+                        ? "Incorrect"
+                        : "Not Answered";
+
+                heading.appendChild(title);
+                heading.appendChild(status);
+                card.appendChild(heading);
+
+                const questionText = document.createElement("p");
+                questionText.className = "question-text";
+                questionText.textContent = question.question;
+                card.appendChild(questionText);
+
+                question.options.forEach((option, optionIndex) => {
+                    const answer = document.createElement("div");
+                    answer.className = "answer";
+
+                    const optionLetter = document.createElement("span");
+                    optionLetter.textContent =
+                        String.fromCharCode(65 + optionIndex) + ".";
+
+                    answer.appendChild(optionLetter);
+
+                    const optionText = document.createElement("span");
+                    optionText.textContent = option;
+                    optionText.style.fontWeight = "normal";
+
+                    answer.appendChild(optionText);
+
+                    if (optionIndex === question.answer) {
+                        answer.classList.add("correct-answer");
+
+                        const label = document.createElement("strong");
+                        label.textContent = "✓ Correct Answer";
+                        answer.appendChild(label);
+                    }
+
+                    if (isAnswered && optionIndex === userAnswer) {
+                        if (!isCorrect) {
+                            answer.classList.add("wrong-answer");
+                        }
+
+                        const label = document.createElement("strong");
+                        label.textContent = isCorrect
+                            ? "✓ Your Answer"
+                            : "✕ Your Answer";
+
+                        answer.appendChild(label);
+                    }
+
+                    card.appendChild(answer);
+                });
+
+                container.appendChild(card);
+            });
+        }
+    </script>
+
+</body>
+</html>

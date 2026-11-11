@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Quizzes | Smart Quiz</title>
+
+    <link rel="stylesheet" href="quizzes.css">
+    <link rel="stylesheet" href="logo.css">
+    <script src="student-data.js"></script>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="dashboard.html" class="logo project-brand">
+            <img src="images/logo.jpg"
+                 alt="Smart Quiz Logo"
+                 class="project-logo project-logo-small">
+            <span>Smart Quiz</span>
+        </a>
+
+        <a href="dashboard.html" class="back-link">
+            Back to Dashboard
+        </a>
+    </header>
+
+    <main class="container">
+        <div class="page-heading">
+            <p class="subtitle">STUDENT PORTAL</p>
+            <h1>Available Quizzes</h1>
+            <p>Choose a quiz and test your knowledge.</p>
+        </div>
+
+        <section class="quiz-grid" id="quizGrid"></section>
+    </main>
+
+    <script>
+        // Existing quizzes already supported by quiz.html
+        const defaultQuizzes = [
+            {
+                id: "programming",
+                title: "Introduction to Programming",
+                category: "Programming",
+                description: "Test your knowledge of basic programming concepts.",
+                icon: "💻",
+                questionCount: 5,
+                duration: 20,
+                isDefault: true
+            },
+            {
+                id: "networking",
+                title: "Computer Networks",
+                category: "Networking",
+                description: "Review fundamental computer networking concepts.",
+                icon: "🌐",
+                questionCount: 5,
+                duration: 30,
+                isDefault: true
+            },
+            {
+                id: "database",
+                title: "Database Fundamentals",
+                category: "Database",
+                description: "Explore databases and basic data management concepts.",
+                icon: "🗄️",
+                questionCount: 5,
+                duration: 25,
+                isDefault: true
+            }
+        ];
+
+        function getInstructorQuizzes() {
+            try {
+                const stored = JSON.parse(
+                    localStorage.getItem("instructorQuizzes") || "[]"
+                );
+
+                if (!Array.isArray(stored)) {
+                    return [];
+                }
+
+                return stored.filter(quiz =>
+                    String(quiz.status || "").toLowerCase() === "published"
+                );
+            } catch (error) {
+                console.error("Error loading instructor quizzes:", error);
+                return [];
+            }
+        }
+
+        function getQuizQuestionCount(quiz) {
+            if (Array.isArray(quiz.questions)) {
+                return quiz.questions.length;
+            }
+
+            return Number(quiz.questionCount) || 0;
+        }
+
+        function createQuizCard(quiz, isDefault) {
+            const card = document.createElement("article");
+            card.className = "quiz-card";
+
+            const icon = document.createElement("div");
+            icon.className = "quiz-icon";
+            icon.textContent = quiz.icon || "📝";
+
+            const category = document.createElement("span");
+            category.className = "tag";
+            category.textContent = quiz.category || "General";
+
+            const title = document.createElement("h2");
+            title.textContent = quiz.title || "Untitled Quiz";
+
+            const description = document.createElement("p");
+            description.textContent =
+                quiz.description || "Test your knowledge with this quiz.";
+
+            const details = document.createElement("div");
+            details.className = "quiz-details";
+
+            const questions = document.createElement("span");
+            const count = getQuizQuestionCount(quiz);
+            questions.textContent = count + " Questions";
+
+            const duration = document.createElement("span");
+            duration.textContent =
+                (Number(quiz.duration) || Number(quiz.timeLimit) || 20)
+                + " Minutes";
+
+            details.appendChild(questions);
+            details.appendChild(duration);
+
+            const button = document.createElement("button");
+            button.textContent = "Start Quiz";
+
+            button.addEventListener("click", function () {
+                if (isDefault) {
+                    sessionStorage.setItem("selectedQuiz", quiz.id);
+                    sessionStorage.removeItem("selectedInstructorQuizId");
+                    window.location.href = "quiz.html";
+                } else {
+                    // quiz.html will support this in the next step.
+                    sessionStorage.setItem(
+                        "selectedInstructorQuizId",
+                        String(quiz.id)
+                    );
+                    sessionStorage.setItem("selectedQuiz", "instructor");
+                    window.location.href = "quiz.html";
+                }
+            });
+
+            card.appendChild(icon);
+            card.appendChild(category);
+            card.appendChild(title);
+            card.appendChild(description);
+            card.appendChild(details);
+            card.appendChild(button);
+
+            return card;
+        }
+
+        function renderQuizzes() {
+            const quizGrid = document.getElementById("quizGrid");
+            quizGrid.replaceChildren();
+
+            defaultQuizzes.forEach(quiz => {
+                quizGrid.appendChild(createQuizCard(quiz, true));
+            });
+
+            const instructorQuizzes = getInstructorQuizzes();
+
+            instructorQuizzes.forEach(quiz => {
+                quizGrid.appendChild(createQuizCard(quiz, false));
+            });
+        }
+
+        renderQuizzes();
+    </script>
+
+</body>
+</html>
