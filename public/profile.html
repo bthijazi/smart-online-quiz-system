@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | My Profile</title>
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+    <header class="topbar">
+        <a class="logo project-brand" href="dashboard.html">
+            <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo project-logo-small">
+            <span>Smart Quiz</span>
+        </a>
+        <a class="back-link" href="dashboard.html">← Back to Dashboard</a>
+    </header>
+
+    <main class="container">
+        <div class="page-heading">
+            <p class="subtitle">ACCOUNT SETTINGS</p>
+            <h1>My Profile</h1>
+            <p>Manage your personal information and check your academic progress.</p>
+        </div>
+
+        <div class="profile-header">
+            <div class="avatar" id="profAvatar">S</div>
+            <div>
+                <h2 id="profHeaderName">Student</h2>
+                <p id="profHeaderEmail">student@smartquiz.com</p>
+                <span class="status">Active Student Account</span>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="panel">
+                <h3>Personal Information</h3>
+                <form id="profileForm">
+                    <label>Full Name</label>
+                    <input id="profName" type="text" required>
+                    <label>Email Address</label>
+                    <input id="profEmail" type="email" disabled>
+                    <button type="submit" class="btn primary">Save Changes</button>
+                    <p class="message" id="profMsg"></p>
+                </form>
+            </div>
+
+            <div class="panel">
+                <h3>Performance Summary</h3>
+                <div class="stat"><span>Completed Quizzes</span><strong id="profDone">0</strong></div>
+                <div class="stat"><span>Average Score</span><strong id="profAvg">0%</strong></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+    (() => {
+        const user = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+        if (!user) { window.location.replace("index.html"); return; }
+
+        document.getElementById("profAvatar").textContent = (user.name || "S").charAt(0).toUpperCase();
+        document.getElementById("profHeaderName").textContent = user.name;
+        document.getElementById("profHeaderEmail").textContent = user.email;
+        document.getElementById("profName").value = user.name;
+        document.getElementById("profEmail").value = user.email;
+
+        document.getElementById("profileForm").addEventListener("submit", async e => {
+            e.preventDefault();
+            const updated = await apiRequest("/profile", "PUT", { name: document.getElementById("profName").value.trim() });
+            sessionStorage.setItem("currentUser", JSON.stringify(updated));
+            document.getElementById("profHeaderName").textContent = updated.name;
+            document.getElementById("profMsg").textContent = "Profile updated successfully.";
+        });
+
+        apiRequest("/student/results").then(res => {
+            document.getElementById("profDone").textContent = res.length;
+            const vis = res.filter(r => r.result_visible && r.score !== null).map(r => Number(r.score));
+            document.getElementById("profAvg").textContent = (vis.length ? Math.round(vis.reduce((a, b) => a + b, 0) / vis.length) : 0) + "%";
+        });
+    })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+</html>

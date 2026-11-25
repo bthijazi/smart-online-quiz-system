@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | Exam Result</title>
+    <link rel="stylesheet" href="result.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body style="background:#f4f7fb;font-family:Arial,sans-serif;display:grid;place-items:center;min-height:100vh;padding:20px;">
+    <div style="background:#fff;max-width:520px;width:100%;padding:36px;border-radius:16px;border:1px solid #e2e8f0;text-align:center;">
+        <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo" style="margin:0 auto 14px;">
+        <span style="background:#dcfce7;color:#15803d;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;">QUIZ SUBMITTED</span>
+        <h1 id="resQuizTitle" style="margin:14px 0 8px;font-size:24px;">Your Result</h1>
+        <p id="resSubMsg" style="color:#64748b;font-size:14px;margin-bottom:24px;"></p>
+
+        <div id="scoreBox" style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <div style="font-size:42px;font-weight:800;color:#2563eb;" id="resPercent">0%</div>
+            <p style="margin:8px 0 0;color:#475569;font-size:14px;" id="resMarksText"></p>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <a href="dashboard.html" style="padding:12px 18px;border-radius:8px;background:#eff6ff;color:#1d4ed8;text-decoration:none;font-weight:700;">Back to Dashboard</a>
+            <button id="reviewBtn" style="padding:12px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;">Review My Answers</button>
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        const res = JSON.parse(sessionStorage.getItem("lastExamResult") || "null");
+        if (!res) { window.location.replace("dashboard.html"); return; }
+
+        document.getElementById("resQuizTitle").textContent = res.quizTitle || "Examination Completed";
+        const revBtn = document.getElementById("reviewBtn");
+
+        if (res.resultVisible && res.answersVisible) {
+            document.getElementById("resPercent").textContent = Math.round(res.percentage || 0) + "%";
+            document.getElementById("resMarksText").textContent = `Earned Marks: ${res.earnedMarks} / ${res.totalMarks} (${res.correctAnswers} of ${res.totalQuestions} objective questions correct)`;
+            revBtn.addEventListener("click", () => {
+                sessionStorage.setItem("selectedAttemptId", res.attempt_id);
+                window.location.href = "review.html";
+            });
+        } else {
+            document.getElementById("resPercent").textContent = "Pending";
+            document.getElementById("resPercent").style.fontSize = "28px";
+            document.getElementById("resMarksText").textContent = "Your answers have been recorded. Results will be visible once released by your instructor.";
+            revBtn.style.display = "none";
+        }
+    })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+</html>

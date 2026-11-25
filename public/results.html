@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | My Results</title>
+    <link rel="stylesheet" href="result.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+    <header class="topbar" style="background:#fff;padding:18px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;">
+        <a class="project-brand" href="dashboard.html" style="text-decoration:none;font-size:22px;font-weight:bold;color:#2563eb;">
+            <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo project-logo-small">
+            <span>Smart Quiz</span>
+        </a>
+        <a href="dashboard.html" style="color:#475569;text-decoration:none;">← Back to Dashboard</a>
+    </header>
+
+    <main style="width:90%;max-width:1000px;margin:35px auto;">
+        <h1 style="margin-bottom:8px;">My Quiz Results</h1>
+        <p style="color:#64748b;margin-bottom:24px;">View your submitted attempts and review answers when released.</p>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;text-align:left;">
+                <thead>
+                    <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+                        <th style="padding:14px;">Quiz Title</th>
+                        <th style="padding:14px;">Completed Date</th>
+                        <th style="padding:14px;">Score</th>
+                        <th style="padding:14px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="myResultsRows"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+    (() => {
+        const user = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+        if (!user || user.role !== "student") { window.location.replace("index.html"); return; }
+
+        apiRequest("/student/results").then(list => {
+            const tbody = document.getElementById("myResultsRows");
+            tbody.replaceChildren();
+            if (!list.length) { tbody.innerHTML = '<tr><td colspan="4" style="padding:24px;text-align:center;color:#64748b;">No quiz results yet.</td></tr>'; return; }
+
+            list.forEach(r => {
+                const tr = document.createElement("tr");
+                tr.style.borderBottom = "1px solid #e2e8f0";
+                const scoreText = r.result_visible ? `<strong>${Math.round(r.score || 0)}%</strong>` : `<span style="color:#92400e;background:#fef3c7;padding:4px 8px;border-radius:6px;font-size:12px;">Hidden by Instructor</span>`;
+                const btnHTML = r.result_visible ? `<button data-rev="${r.attempt_id}" style="padding:8px 12px;border:0;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer;font-weight:600;">Review Answers</button>` : `<span style="color:#94a3b8;font-size:12px;">Not released yet</span>`;
+
+                tr.innerHTML = `<td style="padding:14px;">${r.quiz?.title || 'Quiz'}</td><td style="padding:14px;">${r.ended_at ? new Date(r.ended_at).toLocaleString('en-CA') : '—'}</td><td style="padding:14px;">${scoreText}</td><td style="padding:14px;">${btnHTML}</td>`;
+                const btn = tr.querySelector("[data-rev]");
+                if (btn) btn.addEventListener("click", () => { sessionStorage.setItem("selectedAttemptId", r.attempt_id); window.location.href = "review.html"; });
+                tbody.appendChild(tr);
+            });
+        });
+    })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+</html>

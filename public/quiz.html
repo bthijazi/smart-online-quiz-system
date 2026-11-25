@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | Examination</title>
+    <link rel="stylesheet" href="quiz.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+    <style>
+        .exam-shell {
+            max-width: 1150px;
+            margin: 24px auto;
+            padding: 0 18px;
+            display: grid;
+            grid-template-columns: 1fr 290px;
+            gap: 20px;
+        }
+
+        .exam-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 26px;
+        }
+
+        .q-block {
+            padding: 18px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .q-block:last-child {
+            border-bottom: 0;
+        }
+
+        .opt-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .opt-label.selected {
+            background: #eff6ff;
+            border-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .q-pill {
+            padding: 9px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            font-weight: 700;
+            cursor: default;
+        }
+
+        .q-pill.answered {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #166534;
+        }
+
+        .q-pill.current {
+            outline: 2px solid #2563eb;
+        }
+
+        .q-pill:disabled {
+            opacity: 0.75;
+            cursor: default;
+        }
+
+        .essay-box {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        @media (max-width: 850px) {
+            .exam-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar"
+        style="background:#fff;padding:15px 5%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;">
+        <div class="project-brand">
+            <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo project-logo-small">
+            <strong id="examTitle" style="font-size:18px;">Loading Exam...</strong>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+            <span style="background:#fef3c7;color:#92400e;padding:6px 12px;border-radius:8px;font-weight:700;">⏱ <span
+                    id="timerDisplay">00:00</span></span>
+            <button id="topSubmitBtn"
+                style="padding:10px 16px;border:0;border-radius:8px;background:#16a34a;color:#fff;font-weight:700;cursor:pointer;">Submit
+                Examination</button>
+        </div>
+    </header>
+
+    <div class="exam-shell">
+        <div class="exam-card">
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:#64748b;font-size:13px;">
+                <span id="pageIndicator">Page 1</span>
+                <span id="backtrackNotice"></span>
+            </div>
+
+            <div id="questionsContainer"></div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:22px;">
+                <button id="prevPageBtn"
+                    style="padding:10px 18px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-weight:700;cursor:pointer;">←
+                    Previous</button>
+                <button id="nextPageBtn"
+                    style="padding:10px 18px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;">Next
+                    →</button>
+            </div>
+        </div>
+
+        <aside class="exam-card" style="height:fit-content;">
+            <h3 style="margin:0 0 8px;font-size:16px;">Question Navigator</h3>
+            <p style="margin:0 0 10px;font-size:12px;color:#64748b;" id="answeredCounter">0 / 0 answered</p>
+            <div class="nav-grid" id="navigatorGrid"></div>
+            <div
+                style="margin-top:18px;padding:12px;background:#f8fafc;border-radius:9px;font-size:12px;color:#475569;">
+                <strong>🛡 AI Proctoring Active</strong><br>
+                Tab switches and focus leaves are monitored automatically.
+            </div>
+        </aside>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        (() => {
+            const user = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+            const quizId = sessionStorage.getItem("selectedQuizId");
+            if (!user || user.role !== "student" || !quizId) {
+                window.location.replace("quizzes.html");
+                return;
+            }
+
+            let attemptId = null, quizData = null, questions = [];
+            let perPage = 1, currentPage = 0, allowBacktrack = true;
+            let answers = {};
+            let tabSwitches = 0, mouseLeaves = 0, copyPasteAttempts = 0, isSubmitting = false;
+
+            function notifyWarning(msg) {
+                let warn = document.getElementById("antiCheatToast");
+                if (!warn) {
+                    warn = document.createElement("div");
+                    warn.id = "antiCheatToast";
+                    warn.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#dc2626;color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2);";
+                    document.body.appendChild(warn);
+                }
+                warn.textContent = "⚠ " + msg;
+                warn.style.display = "block";
+                clearTimeout(warn._t);
+                warn._t = setTimeout(() => { warn.style.display = "none"; }, 2500);
+            }
+
+            function syncBehavior(extraCopyAttempt = false) {
+                if (!attemptId || isSubmitting) return;
+                if (extraCopyAttempt) copyPasteAttempts++;
+                apiRequest("/student/attempts/" + attemptId + "/behavior", "POST", {
+                    tab_switches: tabSwitches,
+                    mouse_leaves: mouseLeaves,
+                    copy_paste_attempts: copyPasteAttempts
+                }).catch(() => { });
+            }
+
+            // تفعيل الحماية الشاملة ضد النسخ والقص واللصق وتحديد النص والزر الأيمن واحتسابها كمحاولة غش
+            document.body.style.userSelect = "none";
+            document.body.style.webkitUserSelect = "none";
+
+            ["copy", "cut", "paste"].forEach(evt => {
+                document.addEventListener(evt, e => {
+                    e.preventDefault();
+                    notifyWarning("Copy/Paste is disabled and recorded as suspicious!");
+                    syncBehavior(true);
+                });
+            });
+
+            document.addEventListener("contextmenu", e => {
+                e.preventDefault();
+                notifyWarning("Right-Click is disabled during the exam!");
+            });
+
+            document.addEventListener("keydown", e => {
+                const k = e.key.toLowerCase();
+                if ((e.ctrlKey || e.metaKey) && ["c", "v", "x", "a", "u", "s"].includes(k)) {
+                    e.preventDefault();
+                    const isCopyPaste = ["c", "v", "x"].includes(k);
+                    notifyWarning(isCopyPaste ? "Copy/Paste shortcut recorded as suspicious!" : "Keyboard shortcut disabled!");
+                    if (isCopyPaste) syncBehavior(true);
+                }
+            });
+
+            async function initExam() {
+                try {
+                    const res = await apiRequest("/student/quizzes/" + quizId + "/start", "POST");
+                    attemptId = res.attempt_id;
+                    quizData = res.quiz;
+                    questions = quizData.questions || [];
+                    perPage = Math.max(1, Number(quizData.questions_per_page || 1));
+                    allowBacktrack = Boolean(quizData.allow_backtracking);
+
+                    document.getElementById("examTitle").textContent = quizData.title;
+                    if (!allowBacktrack) {
+                        document.getElementById("prevPageBtn").style.display = "none";
+                        document.getElementById("backtrackNotice").textContent = "🔒 Forward-only mode (No backtracking)";
+                    }
+
+                    let remainingSeconds = (quizData.duration_minutes || 30) * 60;
+                    if (quizData.available_until) {
+                        const deadlineMs = new Date(quizData.available_until.replace(" ", "T")).getTime();
+                        const secondsUntilClose = Math.floor((deadlineMs - Date.now()) / 1000);
+                        if (secondsUntilClose > 0) {
+                            remainingSeconds = Math.min(remainingSeconds, secondsUntilClose);
+                        } else {
+                            remainingSeconds = 1;
+                        }
+                    }
+                    startTimer(remainingSeconds);
+                    renderPage();
+                } catch (e) {
+                    alert(e.message);
+                    window.location.replace("quizzes.html");
+                }
+            }
+
+            function renderNavigator() {
+                const grid = document.getElementById("navigatorGrid");
+                grid.replaceChildren();
+                let answeredCount = 0;
+
+                questions.forEach((q, idx) => {
+                    const val = answers[q.question_id];
+                    const isAns = val !== undefined && val !== null && String(val).trim() !== "";
+                    if (isAns) answeredCount++;
+                    const pageOfQ = Math.floor(idx / perPage);
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.disabled = true;
+                    btn.className = "q-pill" + (isAns ? " answered" : "") + (pageOfQ === currentPage ? " current" : "");
+                    btn.textContent = String(idx + 1);
+                    grid.appendChild(btn);
+                });
+                document.getElementById("answeredCounter").textContent = answeredCount + " / " + questions.length + " Questions answered";
+            }
+            function renderPage() {
+                const totalPages = Math.max(1, Math.ceil(questions.length / perPage));
+                const start = currentPage * perPage;
+                const slice = questions.slice(start, start + perPage);
+                document.getElementById("pageIndicator").textContent = "Page " + (currentPage + 1) + " of " + totalPages;
+                document.getElementById("prevPageBtn").disabled = (currentPage === 0);
+                document.getElementById("nextPageBtn").textContent = (currentPage >= totalPages - 1) ? "Finish & Submit ✓" : "Next →";
+                const container = document.getElementById("questionsContainer");
+                container.replaceChildren();
+                slice.forEach((q, i) => {
+                    const globalIndex = start + i + 1;
+                    const block = document.createElement("div");
+                    block.className = "q-block";
+                    const titleRow = document.createElement("div");
+                    titleRow.style.marginBottom = "8px";
+                    if (q.section_title) {
+                        const secSpan = document.createElement("span");
+                        secSpan.style.cssText = "background:#eff6ff;color:#2563eb;padding:3px 8px;border-radius:6px;font-size:11px;margin-inline-end:8px;";
+                        secSpan.textContent = q.section_title;
+                        titleRow.appendChild(secSpan);
+                    }
+                    const strongQ = document.createElement("strong");
+                    strongQ.textContent = "Q" + globalIndex + ". ";
+                    titleRow.appendChild(strongQ);
+                    titleRow.append(q.question_text + " ");
+                    const marksSpan = document.createElement("span");
+                    marksSpan.style.cssText = "color:#64748b;font-size:12px;";
+                    marksSpan.textContent = "(" + q.marks + " Marks)";
+                    titleRow.appendChild(marksSpan);
+                    block.appendChild(titleRow);
+                    if (q.question_type === "essay") {
+                        const ta = document.createElement("textarea");
+                        ta.className = "essay-box";
+                        ta.rows = 4;
+                        ta.placeholder = "Write your answer here (Copy/Paste is disabled)...";
+                        ta.value = answers[q.question_id] || "";
+                        ta.addEventListener("input", () => {
+                            answers[q.question_id] = ta.value;
+                            renderNavigator();
+                        });
+                        block.appendChild(ta);
+                    } else {
+                        (q.options || []).forEach(opt => {
+                            const lbl = document.createElement("label");
+                            const checked = Number(answers[q.question_id]) === Number(opt.option_id);
+                            lbl.className = "opt-label" + (checked ? " selected" : "");
+                            const radio = document.createElement("input");
+                            radio.type = "radio";
+                            radio.name = "q_" + q.question_id;
+                            radio.value = String(opt.option_id);
+                            radio.checked = checked;
+                            radio.addEventListener("change", () => {
+                                answers[q.question_id] = opt.option_id;
+                                renderPage();
+                            });
+                            const span = document.createElement("span");
+                            span.textContent = opt.option_text;
+                            lbl.append(radio, span);
+                            block.appendChild(lbl);
+                        });
+                    }
+                    container.appendChild(block);
+                });
+                renderNavigator();
+            }
+            document.getElementById("prevPageBtn").addEventListener("click", () => {
+                if (allowBacktrack && currentPage > 0) {
+                    currentPage--;
+                    renderPage();
+                }
+            });
+            document.getElementById("nextPageBtn").addEventListener("click", () => {
+                const totalPages = Math.max(1, Math.ceil(questions.length / perPage));
+                if (currentPage < totalPages - 1) {
+                    currentPage++;
+                    renderPage();
+                } else {
+                    submitExam(false);
+                }
+            });
+            document.getElementById("topSubmitBtn").addEventListener("click", () => submitExam(false));
+            async function submitExam(auto = false) {
+                if (isSubmitting) return;
+                if (!auto && !confirm("Are you sure you want to submit your examination?")) return;
+                isSubmitting = true;
+                const marksMap = {};
+                questions.forEach(q => {
+                    marksMap[q.question_id] = q.marks;
+                });
+                try {
+                    const result = await apiRequest("/student/attempts/" + attemptId + "/submit", "POST", {
+                        answers: answers,
+                        question_marks: marksMap
+                    });
+                    sessionStorage.setItem("lastExamResult", JSON.stringify(result));
+                    window.location.replace("result.html");
+                } catch (e) {
+                    isSubmitting = false;
+                    alert("Submit error: " + e.message);
+                }
+            }
+            function startTimer(seconds) {
+                let rem = seconds;
+                const el = document.getElementById("timerDisplay");
+                const iv = setInterval(() => {
+                    if (isSubmitting) {
+                        clearInterval(iv);
+                        return;
+                    }
+                    const m = Math.floor(rem / 60);
+                    const s = rem % 60;
+                    el.textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+                    if (rem <= 0) {
+                        clearInterval(iv);
+                        submitExam(true);
+                    }
+                    rem--;
+                }, 1000);
+            }
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && attemptId && !isSubmitting) {
+                    tabSwitches++;
+                    syncBehavior(false);
+                }
+            });
+            document.addEventListener("mouseleave", () => {
+                if (attemptId && !isSubmitting) {
+                    mouseLeaves++;
+                    syncBehavior(false);
+                }
+            });
+            initExam();
+        })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+
+</html>

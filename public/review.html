@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | Answer Review &amp; Grading</title>
+    <link rel="stylesheet" href="review.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+
+<body style="background:#f4f7fb;font-family:Arial,sans-serif;color:#0f172a;">
+    <header
+        style="background:#fff;padding:16px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;">
+        <div class="project-brand">
+            <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo project-logo-small">
+            <strong>Answer Review &amp; Grading</strong>
+        </div>
+        <a href="#" id="backBtn" style="color:#2563eb;text-decoration:none;font-weight:700;">← Back</a>
+    </header>
+
+    <main style="width:92%;max-width:900px;margin:30px auto;">
+        <div
+            style="background:#fff;padding:24px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h2 id="revQuizTitle" style="margin:0 0 6px;">Quiz Review</h2>
+                <p id="revStudentInfo" style="margin:0;color:#64748b;font-size:14px;"></p>
+            </div>
+            <div style="font-size:24px;font-weight:800;color:#2563eb;" id="revTotalScore">0%</div>
+        </div>
+
+        <div id="reviewQuestionsBox" style="display:grid;gap:16px;"></div>
+
+        <div id="gradingActions" style="margin-top:22px;display:none;justify-content:flex-end;gap:12px;">
+            <button id="saveGradesBtn"
+                style="padding:12px 22px;border:0;border-radius:9px;background:#16a34a;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Save
+                Manual Grades</button>
+        </div>
+    </main>
+
+    <script src="api.js"></script>
+    <script>
+        (() => {
+            const user = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+            const attemptId = sessionStorage.getItem("selectedAttemptId");
+            if (!user || !attemptId) { window.location.replace("index.html"); return; }
+
+            const isStaff = (user.role === "instructor" || user.role === "admin");
+            document.getElementById("backBtn").addEventListener("click", e => {
+                e.preventDefault();
+                if (user.role === "admin") window.location.href = "admin-dashboard.html";
+                else if (user.role === "instructor") window.location.href = "instructor-dashboard.html";
+                else window.location.href = "results.html";
+            });
+
+            async function loadReview() {
+                const endpoint = user.role === "admin" ? `/admin/attempts/${attemptId}/review`
+                    : (user.role === "instructor" ? `/instructor/attempts/${attemptId}/review`
+                        : `/student/attempts/${attemptId}/review`);
+
+                try {
+                    const attempt = await apiRequest(endpoint);
+                    document.getElementById("revQuizTitle").textContent = attempt.quiz?.title || "Exam Review";
+                    document.getElementById("revStudentInfo").textContent = `Student: ${attempt.user?.username || user.name} · Completed: ${attempt.ended_at ? new Date(attempt.ended_at).toLocaleString('en-CA') : '—'}`;
+                    document.getElementById("revTotalScore").textContent = `Final Score: ${Math.round(attempt.score || 0)}%`;
+
+                    const box = document.getElementById("reviewQuestionsBox");
+                    box.replaceChildren();
+                    const ansMap = {};
+                    (attempt.answers || []).forEach(a => { ansMap[a.question_id] = a; });
+
+                    let hasEssay = false;
+                    (attempt.questions || []).forEach((q, idx) => {
+                        const ans = ansMap[q.question_id] || {};
+                        const card = document.createElement("div");
+                        card.style.cssText = "background:#fff;padding:22px;border-radius:14px;border:1px solid #e2e8f0;";
+
+                        let bodyHTML = `<div style="display:flex;justify-content:space-between;margin-bottom:10px;"><strong>Q${idx + 1}. ${q.question_text}</strong><span style="color:#64748b;font-size:13px;">Max: ${q.marks} Marks</span></div>`;
+
+                        if (q.question_type === "essay") {
+                            hasEssay = true;
+                            bodyHTML += `<div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:10px;"><strong>Student Answer:</strong><p style="margin:6px 0 0;white-space:pre-wrap;">${ans.essay_answer || '(No answer submitted)'}</p></div>`;
+                            if (isStaff) {
+                                bodyHTML += `<label style="font-size:13px;font-weight:700;">Awarded Marks (0 to ${q.marks}): <input type="number" class="grade-input" data-qid="${q.question_id}" min="0" max="${q.marks}" step="0.5" value="${ans.awarded_marks || 0}" style="width:90px;padding:7px;border:1px solid #cbd5e1;border-radius:6px;margin-inline-start:8px;"></label>`;
+                            } else {
+                                bodyHTML += `<span style="color:#2563eb;font-weight:700;font-size:13px;">Awarded Marks: ${ans.awarded_marks || 0} / ${q.marks}</span>`;
+                            }
+                        } else {
+                            (q.options || []).forEach(opt => {
+                                const isSelected = Number(ans.selected_option_id) === Number(opt.option_id);
+                                const isCorrect = Boolean(opt.is_correct);
+                                let bg = "#fff", border = "#e2e8f0", badge = "";
+                                if (isCorrect) { bg = "#dcfce7"; border = "#16a34a"; badge = " ✓ Correct"; }
+                                else if (isSelected && !isCorrect) { bg = "#fee2e2"; border = "#dc2626"; badge = " ✗ Student Choice"; }
+
+                                bodyHTML += `<div style="padding:9px 12px;border:1px solid ${border};background:${bg};border-radius:8px;margin-top:6px;font-size:13px;">${opt.option_text}<strong>${badge}</strong></div>`;
+                            });
+                        }
+
+                        card.innerHTML = bodyHTML;
+                        box.appendChild(card);
+                    });
+
+                    if (isStaff && hasEssay) {
+                        document.getElementById("gradingActions").style.display = "flex";
+                    }
+                } catch (e) {
+                    alert(e.message);
+                }
+            }
+
+            document.getElementById("saveGradesBtn").addEventListener("click", async () => {
+                const grades = {};
+                document.querySelectorAll(".grade-input").forEach(inp => {
+                    grades[inp.dataset.qid] = Number(inp.value) || 0;
+                });
+                try {
+                    const res = await apiRequest(`/instructor/attempts/${attemptId}/grade`, "POST", { grades });
+                    alert(`Grades saved! New Score: ${res.new_score}%`);
+                    loadReview();
+                } catch (e) { alert(e.message); }
+            });
+
+            loadReview();
+        })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+
+</html>

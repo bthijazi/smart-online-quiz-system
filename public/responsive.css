@@ -1,0 +1,287 @@
+/* استيراد خط Cairo الأنيق وتطبيقه على كافة صفحات النظام */
+@import url('https://googleapis.com');
+
+body,
+button,
+input,
+select,
+textarea,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+td,
+th,
+label {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif !important;
+}
+
+
+/* ==========================================================================
+   1. الحفاظ على التخطيط الجانبي والبطاقات الأربعة بحجم مصغر عند تصغير الشاشة
+   ========================================================================== */
+@media (max-width: 1100px) {
+
+    .sidebar,
+    .admin-sidebar {
+        width: 195px !important;
+        padding: 20px 10px !important;
+    }
+
+    .main,
+    .main-content {
+        margin-left: 195px !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .stat-card {
+        padding: 14px !important;
+    }
+
+    .stat-card strong,
+    .stat-card h2 {
+        font-size: 22px !important;
+    }
+}
+
+@media (max-width: 750px) {
+    .admin-app {
+        flex-direction: row !important;
+    }
+
+    .sidebar,
+    .admin-sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 165px !important;
+        height: 100vh !important;
+        padding: 16px 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .brand,
+    .admin-brand {
+        font-size: 17px !important;
+        padding: 0 6px 18px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .brand .project-logo,
+    .admin-brand .project-logo {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .navigation,
+    .admin-nav,
+    .sidebar nav {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .nav-link {
+        width: 100% !important;
+        padding: 10px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .sidebar-bottom {
+        display: block !important;
+        margin-top: auto !important;
+    }
+
+    .main,
+    .main-content {
+        margin-left: 165px !important;
+        padding: 16px !important;
+    }
+
+    .admin-main {
+        margin-left: 165px !important;
+    }
+
+    .topbar,
+    .admin-topbar {
+        padding: 14px 16px !important;
+    }
+
+    .topbar h1,
+    .topbar h2,
+    .admin-topbar h1 {
+        font-size: 19px !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .stat-card {
+        padding: 10px !important;
+    }
+
+    .stat-card strong,
+    .stat-card h2 {
+        font-size: 18px !important;
+    }
+
+    .stat-card span,
+    .stat-card p {
+        font-size: 11px !important;
+    }
+
+    .modal,
+    .modal-card {
+        width: 94% !important;
+        max-width: 94% !important;
+        padding: 16px !important;
+    }
+}
+
+/* ==========================================================================
+   2. تنسيق اللغة العربية (RTL) لجميع الصفحات بدون فراغات جانبية
+   ========================================================================== */
+html[dir="rtl"] body {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .sidebar {
+    left: auto !important;
+    right: 0 !important;
+}
+
+html[dir="rtl"] .main,
+html[dir="rtl"] .main-content {
+    margin-left: 0 !important;
+    margin-right: 250px !important;
+}
+
+/* لوحة الأدمن تستخدم Flexbox فلا تحتاج margin-right على الشاشات الكبيرة */
+html[dir="rtl"] .admin-main {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+html[dir="rtl"] .nav-link,
+html[dir="rtl"] table,
+html[dir="rtl"] th,
+html[dir="rtl"] td {
+    text-align: right !important;
+}
+
+@media (max-width: 1100px) {
+
+    html[dir="rtl"] .main,
+    html[dir="rtl"] .main-content {
+        margin-right: 195px !important;
+    }
+}
+
+@media (max-width: 750px) {
+
+    html[dir="rtl"] .main,
+    html[dir="rtl"] .main-content,
+    html[dir="rtl"] .admin-main {
+        margin-right: 165px !important;
+    }
+}
+
+/* إظهار زر تسجيل الخروج دائماً في لوحة المحاضر وجميع اللوحات */
+.sidebar,
+.admin-sidebar {
+    overflow-y: auto !important;
+}
+
+.sidebar-bottom {
+    display: block !important;
+    margin-top: auto !important;
+    padding-top: 14px !important;
+}
+
+.logout-button {
+    display: block !important;
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid #ef4444 !important;
+    border-radius: 9px !important;
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    cursor: pointer !important;
+}
+
+.logout-button:hover {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.sidebar .help-card {
+    padding: 10px !important;
+    margin-bottom: 8px !important;
+}
+
+/* تنسيق زر الترجمة وتأثير تمرير المؤشر المتناسق مع جميع اللوحات */
+#soqsLangToggle {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #3b82f6 !important;
+    transition: all 0.25s ease !important;
+}
+
+#soqsLangToggle:hover {
+    background: linear-gradient(135deg, #4f46e5, #1d4ed8) !important;
+    color: #ffffff !important;
+    border-color: #6366f1 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35) !important;
+}
+
+/* تثبيت السايد بار بارتفاع الشاشة وتقريب زر الترجمة وعن النظام وتسجيل الخروج */
+.admin-sidebar,
+.sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+}
+
+/* للسايد بار الثابت (fixed) في لوحة المحاضر والطالب */
+.sidebar {
+    position: fixed !important;
+}
+
+.sidebar-bottom {
+    margin-top: 18px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.2) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+.sidebar-bottom .help-card {
+    margin: 0 !important;
+    padding: 10px 12px !important;
+}
+
+#soqsLangToggle {
+    margin: 0 !important;
+    width: 100% !important;
+}
