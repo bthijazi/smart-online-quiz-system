@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Smart Quiz</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+
+<body>
+    <div class="admin-app">
+        <aside class="admin-sidebar">
+            <div class="admin-brand project-brand">
+                <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo">
+                <div>Smart<span>Quiz</span></div>
+            </div>
+            <p class="sidebar-label">ADMIN PANEL</p>
+            <nav class="admin-nav">
+                <button class="nav-link active" data-view="dashboard">◫ Dashboard</button>
+                <button class="nav-link" data-view="users">♙ Manage Users</button>
+                <button class="nav-link" data-view="instructors">▣ Instructors</button>
+                <button class="nav-link" data-view="quizzes">▤ Manage Quizzes</button>
+                <button class="nav-link" data-view="results">▥ Student Results</button>
+                <button class="nav-link" data-view="settings">⚙ System Settings</button>
+            </nav>
+            <div class="sidebar-bottom">
+                <div
+                    style="background:rgba(255,255,255,0.08);padding:12px;border-radius:10px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#e2e8f0;">
+                    <strong style="display:block;color:#fff;margin-bottom:4px;">About System</strong>
+                    <p style="margin:0;">Central control panel to manage users, instructors, quizzes, AI cheating
+                        alerts, and database backups.</p>
+                </div>
+                <button id="logoutButton" class="sidebar-logout">Log Out</button>
+            </div>
+
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar topbar">
+                <div>
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p>Welcome back, <span id="userName">Administrator</span></p>
+                </div>
+                <div class="user-area">
+                    <div class="admin-avatar">A</div>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                <section id="dashboardView" class="admin-view">
+                    <div class="stats-grid">
+                        <div class="stat-card"><span>Total Users</span><strong
+                                id="totalUsers">0</strong><small>Registered accounts</small></div>
+                        <div class="stat-card"><span>Students</span><strong id="totalStudents">0</strong><small>Student
+                                accounts</small></div>
+                        <div class="stat-card"><span>Instructors</span><strong
+                                id="totalInstructors">0</strong><small>Instructor accounts</small></div>
+                        <div class="stat-card"><span>Total Quizzes</span><strong
+                                id="totalQuizzes">0</strong><small>Instructor-created quizzes</small></div>
+                    </div>
+                    <div class="admin-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Recent Quizzes</h2>
+                                <p>Latest quizzes created by instructors</p>
+                            </div>
+                            <button class="secondary-btn" data-view="quizzes">View All</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Title</th>
+                                        <th>Questions</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentQuizRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="stats-grid" style="margin-top:20px">
+                        <div class="stat-card"><span>Submissions</span><strong
+                                id="totalSubmissions">0</strong><small>Recorded attempts</small></div>
+                        <div class="stat-card"><span>Average Score</span><strong
+                                id="averageScore">—</strong><small>Across all attempts</small></div>
+                    </div>
+                </section>
+
+                <section id="usersView" class="admin-view hidden">
+                    <div class="admin-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Manage Users</h2>
+                                <p>Add and manage student and instructor accounts</p>
+                            </div>
+                            <button class="primary-btn" id="addUserButton">+ Add User</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="instructorsView" class="admin-view hidden">
+                    <div class="admin-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Manage Instructors</h2>
+                                <p>Instructor accounts registered in the system</p>
+                            </div>
+                            <button class="primary-btn" id="addInstructorButton">+ Add Instructor</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="instructorRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="quizzesView" class="admin-view hidden">
+                    <div class="admin-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Manage Quizzes</h2>
+                                <p>Review and manage instructor-created quizzes</p>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Quiz Title</th>
+                                        <th>Questions</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quizRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="resultsView" class="admin-view hidden">
+                    <div class="stats-grid">
+                        <div class="stat-card"><span>Total Submissions</span><strong id="resultsTotal">0</strong></div>
+                        <div class="stat-card"><span>Average Score</span><strong id="resultsAverage">—</strong></div>
+                        <div class="stat-card"><span>Unique Students</span><strong id="resultsStudents">0</strong></div>
+                    </div>
+                    <div class="admin-panel" style="margin-top:20px">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Student Results</h2>
+                                <p>All recorded attempts and AI proctoring alerts</p>
+                            </div>
+                        </div>
+                        <input id="resultSearch" type="search" placeholder="Search student, email or quiz"
+                            style="width:100%;max-width:360px;padding:11px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:18px">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Quiz</th>
+                                        <th>Student</th>
+                                        <th>Email</th>
+                                        <th>Proctoring Status</th>
+                                        <th>Percentage</th>
+                                        <th>Completed</th>
+                                        <th>Answers</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminResultRows"></tbody>
+                            </table>
+                        </div>
+                        <p id="resultCount" style="margin-top:12px;color:#64748b"></p>
+                    </div>
+                </section>
+
+                <section id="settingsView" class="admin-view hidden">
+                    <div class="admin-panel settings-panel">
+                        <h2>System Settings &amp; Database Backup</h2>
+                        <p>Record a manual backup of the MySQL database in the system logs.</p>
+                        <label>System Name<input id="systemName" type="text" value="Smart Online Quiz System"></label>
+                        <button class="primary-btn" id="saveSettingsButton" style="margin-top:14px;">Save Settings &amp;
+                            Create Backup</button>
+                    </div>
+                </section>
+
+                <p id="adminMessage" class="admin-message hidden"></p>
+            </main>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-heading">
+                <h2 id="modalTitle">Add User</h2><button id="closeModalButton" class="close-btn"
+                    type="button">×</button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="editingUserId">
+                <label>Full Name<input id="accountName" type="text" required></label>
+                <label>Email<input id="accountEmail" type="email" required></label>
+                <label>Password<input id="accountPassword" type="password" minlength="8"
+                        placeholder="Min 8 characters"></label>
+                <label>Role<select id="accountRole" required>
+                        <option value="student">Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select></label>
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="cancelModalButton">Cancel</button>
+                    <button type="submit" class="primary-btn">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        (() => {
+            const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+            if (!currentUser || currentUser.role !== "admin") { window.location.replace("index.html"); return; }
+
+            const $ = id => document.getElementById(id);
+            let usersCache = [], quizzesCache = [], resultsCache = [];
+            $("userName").textContent = currentUser.name || "Administrator";
+
+            function showMessage(msg) {
+                $("adminMessage").textContent = msg;
+                $("adminMessage").classList.remove("hidden");
+            }
+
+            async function loadAdminData() {
+                try {
+                    const [stats, users, quizzes, results] = await Promise.all([
+                        apiRequest("/admin/stats"), apiRequest("/admin/users"), apiRequest("/admin/quizzes"), apiRequest("/admin/results")
+                    ]);
+                    usersCache = users; quizzesCache = quizzes; resultsCache = results;
+                    $("totalUsers").textContent = stats.totalUsers;
+                    $("totalStudents").textContent = stats.totalStudents;
+                    $("totalInstructors").textContent = stats.totalInstructors;
+                    $("totalQuizzes").textContent = stats.totalQuizzes;
+                    $("totalSubmissions").textContent = stats.totalSubmissions;
+                    $("averageScore").textContent = stats.totalSubmissions ? stats.averageScore + "%" : "—";
+                    renderUsers(); renderQuizzes(); renderResults();
+                } catch (e) { showMessage("Error: " + e.message); }
+            }
+
+            function fillUsersTable(tbody, list) {
+                tbody.replaceChildren();
+                if (!list.length) {
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td"); td.colSpan = 4; td.className = "empty-cell"; td.textContent = "No users found.";
+                    tr.appendChild(td); tbody.appendChild(tr);
+                    return;
+                }
+                list.forEach(u => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td"); td1.textContent = u.name;
+                    const td2 = document.createElement("td"); td2.textContent = u.email;
+                    const td3 = document.createElement("td");
+                    const b = document.createElement("span"); b.className = "role-badge"; b.textContent = u.role; td3.appendChild(b);
+                    const td4 = document.createElement("td");
+                    const act = document.createElement("div"); act.className = "table-actions";
+                    const ed = document.createElement("button"); ed.type = "button"; ed.className = "small-btn"; ed.textContent = "Edit"; ed.dataset.edit = String(u.id);
+                    const dl = document.createElement("button"); dl.type = "button"; dl.className = "small-btn danger-btn"; dl.textContent = "Delete"; dl.dataset.del = String(u.id);
+                    act.append(ed, dl); td4.appendChild(act);
+                    tr.append(td1, td2, td3, td4);
+                    tbody.appendChild(tr);
+                });
+            }
+            function renderUsers() {
+                fillUsersTable($("userRows"), usersCache);
+                fillUsersTable($("instructorRows"), usersCache.filter(u => u.role === "instructor"));
+            }
+            function renderQuizzes() {
+                $("recentQuizRows").replaceChildren();
+                quizzesCache.slice(0, 5).forEach(q => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td"); td1.textContent = q.title;
+                    const td2 = document.createElement("td"); td2.textContent = String(q.questions_count || 0);
+                    const td3 = document.createElement("td");
+                    const sp = document.createElement("span"); sp.className = "status-badge " + (q.is_published ? "published" : "draft"); sp.textContent = q.status; td3.appendChild(sp);
+                    tr.append(td1, td2, td3);
+                    $("recentQuizRows").appendChild(tr);
+                });
+                $("quizRows").replaceChildren();
+                quizzesCache.forEach(q => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td"); td1.textContent = q.title;
+                    const td2 = document.createElement("td"); td2.textContent = String(q.questions_count || 0);
+                    const td3 = document.createElement("td");
+                    const sp = document.createElement("span"); sp.className = "status-badge " + (q.is_published ? "published" : "draft"); sp.textContent = q.status; td3.appendChild(sp);
+                    const td4 = document.createElement("td");
+                    const dl = document.createElement("button"); dl.type = "button"; dl.className = "small-btn danger-btn"; dl.textContent = "Delete"; dl.dataset.delQuiz = String(q.quiz_id); td4.appendChild(dl);
+                    tr.append(td1, td2, td3, td4);
+                    $("quizRows").appendChild(tr);
+                });
+            }
+            function renderResults() {
+                $("resultsTotal").textContent = resultsCache.length;
+                $("resultsAverage").textContent = resultsCache.length ? Math.round(resultsCache.reduce((s, r) => s + Number(r.score || 0), 0) / resultsCache.length) + "%" : "—";
+                $("resultsStudents").textContent = new Set(resultsCache.map(r => r.user_id)).size;
+                const q = $("resultSearch").value.trim().toLowerCase();
+                const filtered = resultsCache.filter(r => ((r.quiz?.title || "") + " " + (r.user?.username || "") + " " + (r.user?.email || "")).toLowerCase().includes(q));
+                $("adminResultRows").replaceChildren();
+                filtered.forEach(r => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td"); td1.textContent = r.quiz?.title || "Quiz";
+                    const td2 = document.createElement("td"); td2.textContent = r.user?.username || "Student";
+                    const td3 = document.createElement("td"); td3.textContent = r.user?.email || "—";
+                    const td4 = document.createElement("td");
+                    td4.textContent = r.is_flagged ? ("⚠ Flagged: " + (r.latest_alert?.alert_type || "Suspicious")) : "Clean";
+                    td4.style.color = r.is_flagged ? "#dc2626" : "#16a34a";
+                    td4.style.fontWeight = "600";
+                    const td5 = document.createElement("td"); td5.textContent = Math.round(r.score || 0) + "%";
+                    const td6 = document.createElement("td"); td6.textContent = r.ended_at ? new Date(r.ended_at).toLocaleString("en-CA") : "—";
+                    const td7 = document.createElement("td");
+                    const rev = document.createElement("button"); rev.type = "button"; rev.className = "small-btn"; rev.textContent = "View Answers"; rev.dataset.review = String(r.attempt_id); td7.appendChild(rev);
+                    tr.append(td1, td2, td3, td4, td5, td6, td7);
+                    $("adminResultRows").appendChild(tr);
+                });
+                $("resultCount").textContent = filtered.length + " result(s)";
+            }
+            const modal = $("userModal");
+            function openModal(user = null, role = "student") {
+                $("userForm").reset();
+                $("editingUserId").value = user ? user.id : "";
+                $("accountName").value = user ? user.name : "";
+                $("accountEmail").value = user ? user.email : "";
+                $("accountRole").value = user ? user.role : role;
+                $("accountPassword").required = !user;
+                $("modalTitle").textContent = user ? "Edit User" : "Add User";
+                modal.classList.remove("hidden");
+            }
+            $("addUserButton").addEventListener("click", () => openModal());
+            $("addInstructorButton").addEventListener("click", () => openModal(null, "instructor"));
+            $("closeModalButton").addEventListener("click", () => modal.classList.add("hidden"));
+            $("cancelModalButton").addEventListener("click", () => modal.classList.add("hidden"));
+            $("userForm").addEventListener("submit", async e => {
+                e.preventDefault();
+                const id = $("editingUserId").value;
+                const payload = { name: $("accountName").value.trim(), email: $("accountEmail").value.trim(), role: $("accountRole").value, password: $("accountPassword").value || undefined };
+                try {
+                    await apiRequest(id ? "/admin/users/" + id : "/admin/users", id ? "PUT" : "POST", payload);
+                    modal.classList.add("hidden");
+                    showMessage("User saved successfully.");
+                    loadAdminData();
+                } catch (err) { alert(err.message); }
+            });
+            document.addEventListener("click", async e => {
+                if (e.target.dataset.edit) {
+                    const u = usersCache.find(x => String(x.id) === e.target.dataset.edit);
+                    if (u) openModal(u);
+                }
+                if (e.target.dataset.del && confirm("Delete this user?")) {
+                    await apiRequest("/admin/users/" + e.target.dataset.del, "DELETE");
+                    loadAdminData();
+                }
+                if (e.target.dataset.delQuiz && confirm("Delete this quiz?")) {
+                    await apiRequest("/admin/quizzes/" + e.target.dataset.delQuiz, "DELETE");
+                    loadAdminData();
+                }
+                if (e.target.dataset.review) {
+                    sessionStorage.setItem("selectedAttemptId", e.target.dataset.review);
+                    window.location.href = "review.html";
+                }
+            });
+            document.querySelectorAll("[data-view]").forEach(btn => btn.addEventListener("click", () => {
+                const v = btn.dataset.view;
+                document.querySelectorAll(".admin-view").forEach(s => s.classList.toggle("hidden", s.id !== v + "View"));
+                document.querySelectorAll(".nav-link").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+                $("pageTitle").textContent = v.charAt(0).toUpperCase() + v.slice(1);
+                loadAdminData();
+            }));
+            $("resultSearch").addEventListener("input", renderResults);
+            $("saveSettingsButton").addEventListener("click", async () => {
+                try {
+                    const res = await apiRequest("/admin/backups", "POST");
+                    showMessage("Backup saved & downloaded: " + res.backup_name);
+
+                    if (res.sql_content) {
+                        const blob = new Blob([res.sql_content], { type: "application/sql" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = res.backup_name;
+                        link.click();
+                    }
+                } catch (err) {
+                    showMessage("Error: " + err.message);
+                }
+            });
+
+            $("logoutButton").addEventListener("click", logoutUser);
+            loadAdminData();
+        })();
+
+
+    </script>
+    <script src="lang.js"></script>
+</body>
+
+</html>

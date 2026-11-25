@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Dashboard | Smart Quiz</title>
+    <link rel="stylesheet" href="instructor-dashboard.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+    <style>
+        .wizard-steps {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #e9ebf3;
+            padding-bottom: 12px;
+        }
+
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            background: #f3f4f9;
+            color: #686e83;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .wizard-step.active {
+            background: #5146e5;
+            color: #ffffff;
+        }
+
+        .wizard-pane {
+            display: none;
+        }
+
+        .wizard-pane.active {
+            display: grid;
+            gap: 14px;
+        }
+
+        .selected-q-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px;
+            border: 1px solid #e2e5ef;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #fafbfe;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <a class="brand project-brand" href="#">
+                <img src="images/logo.png" alt="Smart Quiz Logo" class="project-logo">
+                <div>Smart Quiz<small>INSTRUCTOR PORTAL</small></div>
+            </a>
+            <div class="menu-label">WORKSPACE</div>
+            <nav class="navigation">
+                <button class="nav-link active" data-view="dashboard"><span>▦</span> Dashboard</button>
+                <button class="nav-link" data-view="quizzes"><span>▤</span> My Quizzes</button>
+                <button class="nav-link" data-view="questions"><span>☷</span> Question Bank</button>
+                <button class="nav-link" data-view="results"><span>▥</span> Student Results</button>
+                <button class="nav-link" data-view="profile"><span>♙</span> My Profile</button>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="help-card">
+                    <strong>About System</strong>
+                    <p>Smart platform for creating fixed, random, and lecture-sectioned exams with AI proctoring and
+                        essay grading.</p>
+                </div>
+                <button class="logout-button" id="logoutButton">↪ Log Out</button>
+            </div>
+
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <div class="eyebrow">SMART QUIZ / INSTRUCTOR</div>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="user-area">
+                    <div class="avatar" id="userAvatar">I</div>
+                    <div><strong id="userName">Instructor</strong><small>Instructor</small></div>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- DASHBOARD -->
+                <section class="view active" id="view-dashboard">
+                    <div class="welcome-banner">
+                        <div>
+                            <span class="banner-tag">YOUR TEACHING SPACE</span>
+                            <h2>Welcome back, <span id="welcomeName">Instructor</span>!</h2>
+                            <p>Create fixed, random-pool, or lecture-sectioned quizzes and follow student performance.
+                            </p>
+                        </div>
+                        <button class="button button-light" data-action="create-quiz">＋ Create New Quiz</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <article class="stat-card">
+                            <div class="stat-icon purple">▤</div><span>Total Quizzes</span><strong
+                                id="statQuizzes">0</strong><small>Quizzes you've created</small>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-icon blue">☷</div><span>Question Bank</span><strong
+                                id="statQuestions">0</strong><small>Saved questions</small>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-icon green">✓</div><span>Submissions</span><strong
+                                id="statSubmissions">0</strong><small>Recorded quiz attempts</small>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-icon orange">％</div><span>Average Score</span><strong
+                                id="statAverage">—</strong><small>Across recorded attempts</small>
+                        </article>
+                    </div>
+
+                    <div class="section-heading">
+                        <div>
+                            <h2>Recent Quizzes</h2>
+                            <p>Quick access to your assessments</p>
+                        </div><button class="text-button" data-view="quizzes">View all quizzes →</button>
+                    </div>
+                    <div class="panel">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>QUIZ TITLE</th>
+                                        <th>MODE &amp; MARKS</th>
+                                        <th>DURATION</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentQuizRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MY QUIZZES -->
+                <section class="view" id="view-quizzes">
+                    <div class="section-heading section-heading-top">
+                        <div>
+                            <h2>My Quizzes</h2>
+                            <p>Create and manage your assessments even after publishing.</p>
+                        </div>
+                        <button class="button button-primary" data-action="create-quiz">＋ Create Quiz (3-Step
+                            Wizard)</button>
+                    </div>
+                    <div class="toolbar"><input id="quizSearch" type="search" placeholder="Search quizzes..."><span
+                            id="quizCount">0 quizzes</span></div>
+                    <div class="panel">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>QUIZ TITLE</th>
+                                        <th>MODE &amp; MARKS</th>
+                                        <th>DURATION</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quizRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- QUESTION BANK -->
+                <section class="view" id="view-questions">
+                    <div class="section-heading section-heading-top">
+                        <div>
+                            <h2>Question Bank</h2>
+                            <p>Organize questions by course and lecture.</p>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="button button-secondary" id="addCourseBtn">＋ Add Course</button>
+                            <button class="button button-primary" data-action="add-question">＋ Add Question</button>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <input id="questionSearch" type="search" placeholder="Search questions...">
+                        <select id="bankCourseFilter" style="padding:10px;border:1px solid #e2e5ef;border-radius:8px;">
+                            <option value="">All Courses</option>
+                        </select>
+                        <span id="questionCount">0 questions</span>
+                    </div>
+                    <div class="panel">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>QUESTION</th>
+                                        <th>COURSE / LECTURE</th>
+                                        <th>TYPE</th>
+                                        <th>MARKS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="questionRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STUDENT RESULTS -->
+                <section class="view" id="view-results">
+                    <div class="section-heading section-heading-top">
+                        <div>
+                            <h2>Student Results</h2>
+                            <p>Review recorded quiz attempts, grade essays, and inspect AI alerts.</p>
+                        </div>
+                    </div>
+                    <div class="toolbar">
+                        <input id="resultSearch" type="search" placeholder="Search by quiz or student...">
+                        <select id="resultQuizFilter" style="padding:10px;border:1px solid #e2e5ef;border-radius:8px;">
+                            <option value="">All my quizzes</option>
+                        </select>
+                        <span id="resultCount">0 results</span>
+                    </div>
+                    <div class="panel">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>QUIZ</th>
+                                        <th>STUDENT</th>
+                                        <th>PROCTORING</th>
+                                        <th>SCORE</th>
+                                        <th>COMPLETED</th>
+                                        <th>ANSWERS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PROFILE -->
+                <section class="view" id="view-profile">
+                    <div class="section-heading section-heading-top">
+                        <div>
+                            <h2>My Profile</h2>
+                            <p>Update your account information.</p>
+                        </div>
+                    </div>
+                    <div class="panel profile-panel">
+                        <div class="profile-heading">
+                            <div class="profile-avatar" id="profileAvatar">I</div>
+                            <div>
+                                <h3 id="profileDisplayName">Instructor</h3>
+                                <p>Instructor account</p>
+                            </div>
+                        </div>
+                        <form id="profileForm" class="form-grid">
+                            <label>Full Name<input id="profileName" required></label>
+                            <label>Email Address<input id="profileEmail" type="email" disabled></label>
+                            <div class="form-footer"><button class="button button-primary" type="submit">Save
+                                    Changes</button><span id="profileMessage" class="message"></span></div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3-STEP QUIZ WIZARD MODAL -->
+    <div class="modal-backdrop hidden" id="quizWizardModal">
+        <section class="modal" style="width:min(100%,680px);">
+            <div class="modal-heading">
+                <div>
+                    <h2 id="wizardModalTitle">Create Quiz (3-Step Wizard)</h2>
+                    <p>Configure mode, write questions, and select or configure lecture sections.</p>
+                </div>
+                <button class="icon-button" data-close="quizWizardModal">×</button>
+            </div>
+            <div class="wizard-steps">
+                <div class="wizard-step active" id="stepInd1">1. Details &amp; Exam Mode</div>
+                <div class="wizard-step" id="stepInd2">2. Write Questions</div>
+                <div class="wizard-step" id="stepInd3">3. Configure &amp; Publish</div>
+            </div>
+
+            <!-- STEP 1 -->
+            <div class="wizard-pane active" id="wizardStep1">
+                <div class="form-grid">
+                    <label>Quiz Title<input id="wizTitle" required placeholder="e.g. Midterm Exam"></label>
+                    <label>Course<select id="wizCourse" required></select></label>
+                    <label>Duration (minutes)<input id="wizDuration" type="number" min="1" max="300" value="30"></label>
+                    <label>Passing Score (%)<input id="wizPass" type="number" min="0" max="100" value="50"></label>
+                    <label>Available From<input id="wizFrom" type="datetime-local"></label>
+                    <label>Available Until<input id="wizUntil" type="datetime-local"></label>
+                    <label>Exam Mode
+                        <select id="wizExamMode">
+                            <option value="fixed">1. Fixed Questions (Manual Order)</option>
+                            <option value="random_pool">2. Random Subset from Pool</option>
+                            <option value="sectioned">3. Sectioned by Lecture (Random per Lecture)</option>
+                        </select>
+                    </label>
+                    <label>Show Answers to Students
+                        <select id="wizShowAnswers">
+                            <option value="1">Allow students to review answers</option>
+                            <option value="0">Hide answers (Show score only)</option>
+                        </select>
+                    </label>
+
+                    <label>Result Release Policy
+                        <select id="wizReleaseMode">
+                            <option value="immediate">Immediately after submission</option>
+                            <option value="after_end">After exam end date/time</option>
+                            <option value="manual">Manually by instructor</option>
+                        </select>
+                    </label>
+                    <label>Questions Per Page<input id="wizPerPage" type="number" min="1" max="50" value="1"></label>
+                    <label>Navigation Rule
+                        <select id="wizBacktrack">
+                            <option value="1">Allow Backtracking (Previous button enabled)</option>
+                            <option value="0">Disable Backtracking (Forward only)</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="button button-secondary" data-close="quizWizardModal">Cancel</button>
+                    <button type="button" class="button button-primary" id="toStep2Btn">Save &amp; Next (Step 2)
+                        →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="wizard-pane" id="wizardStep2">
+                <div class="form-grid">
+                    <label>Lecture Name<input id="wizLecture" value="Lecture 1" placeholder="e.g. Lecture 1"></label>
+                    <label>Question Type
+                        <select id="wizQType">
+                            <option value="mcq">Multiple Choice (MCQ)</option>
+                            <option value="true_false">True / False</option>
+                            <option value="essay">Essay (Manual Grading)</option>
+                        </select>
+                    </label>
+                    <label>Marks<input id="wizQMarks" type="number" min="0.5" step="0.5" value="2"></label>
+                </div>
+                <label>Question Text<textarea id="wizQText" rows="2"></textarea></label>
+                <div id="wizMcqBox">
+                    <div class="form-grid">
+                        <label>Option A<input id="wizOptA"></label>
+                        <label>Option B<input id="wizOptB"></label>
+                        <label>Option C<input id="wizOptC"></label>
+                        <label>Option D<input id="wizOptD"></label>
+                    </div>
+                    <label style="margin-top:8px;">Correct Answer<select id="wizCorrectMcq">
+                            <option value="A">Option A</option>
+                            <option value="B">Option B</option>
+                            <option value="C">Option C</option>
+                            <option value="D">Option D</option>
+                        </select></label>
+                </div>
+                <div id="wizTfBox" class="hidden">
+                    <label>Correct Answer<select id="wizCorrectTf">
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                        </select></label>
+                </div>
+                <div><button type="button" class="button button-secondary" id="wizAddQuestionBtn">＋ Add Question to
+                        Bank</button></div>
+                <div class="modal-actions">
+                    <button type="button" class="button button-secondary" id="backToStep1Btn">← Back</button>
+                    <button type="button" class="button button-primary" id="toStep3Btn">Skip / Next (Step 3) →</button>
+                </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="wizard-pane" id="wizardStep3">
+                <div id="poolConfigBox">
+                    <div id="randomPoolOptions" class="hidden"
+                        style="background:#f7f6ff;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;gap:12px;">
+                        <label style="flex:1;">Questions to draw per student<input id="wizRandomCount" type="number"
+                                min="1" value="5"></label>
+                        <label style="flex:1;">Marks per question<input id="wizRandomMarks" type="number" min="0.5"
+                                step="0.5" value="2"></label>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div><strong>Course Bank</strong>
+                            <div id="wizBankPool"
+                                style="max-height:34vh;overflow-y:auto;border:1px solid #e2e5ef;border-radius:8px;padding:8px;margin-top:6px;">
+                            </div>
+                        </div>
+                        <div><strong>Selected Questions</strong>
+                            <div id="wizSelectedPool"
+                                style="max-height:34vh;overflow-y:auto;border:1px solid #e2e5ef;border-radius:8px;padding:8px;margin-top:6px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sectionedConfigBox" class="hidden">
+                    <p style="font-size:12px;color:#64748b;margin:0 0 10px;">Specify how many random questions and marks
+                        per question to draw from each lecture:</p>
+                    <div id="lectureSectionsList" style="max-height:38vh;overflow-y:auto;"></div>
+                </div>
+                <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e5ef;margin-top:8px;">
+                    <label style="font-size:13px;font-weight:700;display:block;margin-bottom:6px;">
+                        Question Types Display Order (Questions inside each type stay randomized):
+                    </label>
+                    <select id="wizTypeOrder"
+                        style="width:100%;padding:9px;border-radius:8px;border:1px solid #cbd5e1;">
+                        <option value="mixed">Default / Mixed Order</option>
+                        <option value="true_false,mcq,essay">1. True/False → 2. Multiple Choice → 3. Essay</option>
+                        <option value="mcq,true_false,essay">1. Multiple Choice → 2. True/False → 3. Essay</option>
+                        <option value="essay,mcq,true_false">1. Essay → 2. Multiple Choice → 3. True/False</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="button button-secondary" id="backToStep2Btn">← Back</button>
+                    <button type="button" class="button button-secondary" id="saveDraftBtn">Save as Draft</button>
+                    <button type="button" class="button button-primary" id="savePublishBtn">Save &amp; Publish
+                        Quiz</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ADD / EDIT QUESTION MODAL -->
+    <div class="modal-backdrop hidden" id="questionModal">
+        <section class="modal">
+            <div class="modal-heading">
+                <div>
+                    <h2 id="questionModalTitle">Add Question</h2>
+                    <p>Assign to course, lecture, type, and marks.</p>
+                </div><button class="icon-button" data-close="questionModal">×</button>
+            </div>
+            <form id="questionForm">
+                <input type="hidden" id="editingQuestionId">
+                <div class="form-grid">
+                    <label>Course<select id="bankQCourse" required></select></label>
+                    <label>Lecture Name<input id="bankQLecture" value="Lecture 1" required></label>
+                    <label>Question Type<select id="bankQType">
+                            <option value="mcq">Multiple Choice</option>
+                            <option value="true_false">True / False</option>
+                            <option value="essay">Essay</option>
+                        </select></label>
+                    <label>Marks<input id="bankQMarks" type="number" min="0.5" step="0.5" value="2" required></label>
+                </div>
+                <label>Question Text<textarea id="newQuestionText" required rows="3"></textarea></label>
+                <div id="bankMcqBox">
+                    <label>Option A<input id="optionA"></label>
+                    <label>Option B<input id="optionB"></label>
+                    <label>Option C<input id="optionC"></label>
+                    <label>Option D<input id="optionD"></label>
+                    <label>Correct Answer<select id="correctOption">
+                            <option value="A">Option A</option>
+                            <option value="B">Option B</option>
+                            <option value="C">Option C</option>
+                            <option value="D">Option D</option>
+                        </select></label>
+                </div>
+                <div id="bankTfBox" class="hidden">
+                    <label>Correct Answer<select id="bankCorrectTf">
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                        </select></label>
+                </div>
+                <div class="modal-actions"><button type="button" class="button button-secondary"
+                        data-close="questionModal">Cancel</button><button type="submit"
+                        class="button button-primary">Save Question</button></div>
+            </form>
+        </section>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+    <script src="api.js"></script>
+    <script>
+        (() => {
+            const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "null");
+            if (!currentUser || currentUser.role !== "instructor") { window.location.replace("index.html"); return; }
+
+            const $ = id => document.getElementById(id);
+            let coursesCache = [], quizzesCache = [], questionsCache = [], resultsCache = [];
+            let activeWizardQuizId = null, selectedWizardItems = [];
+
+            const name = currentUser.name || "Instructor";
+            $("userName").textContent = name;
+            $("welcomeName").textContent = name.split(" ").at(0);
+            $("userAvatar").textContent = name.charAt(0).toUpperCase();
+            $("profileAvatar").textContent = name.charAt(0).toUpperCase();
+            $("profileDisplayName").textContent = name;
+            $("profileName").value = name;
+            $("profileEmail").value = currentUser.email || "";
+
+            function notify(msg) {
+                $("toast").textContent = msg;
+                $("toast").classList.remove("hidden");
+                setTimeout(() => $("toast").classList.add("hidden"), 2800);
+            }
+
+            function populateCourses() {
+                Array.of($("wizCourse"), $("bankQCourse"), $("bankCourseFilter")).forEach((sel, idx) => {
+                    const prev = sel.value;
+                    sel.replaceChildren();
+                    if (idx === 2) sel.add(new Option("All Courses", ""));
+                    coursesCache.forEach(c => sel.add(new Option(c.course_name, String(c.course_id))));
+                    if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+                });
+            }
+
+            function fillQuizzes(tbody, list) {
+                tbody.replaceChildren();
+                if (!list.length) {
+                    const tr = document.createElement("tr");
+                    const td = document.createElement("td");
+                    td.colSpan = 5;
+                    td.textContent = "No quizzes yet.";
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                    return;
+                }
+                list.forEach(q => {
+                    const tr = document.createElement("tr");
+                    const modeLabel = q.exam_mode === "sectioned" ? "Sectioned (Lectures)" : (q.exam_mode === "random_pool" ? "Random Pool" : "Fixed Order");
+
+                    const td1 = document.createElement("td");
+                    const tDiv = document.createElement("div"); tDiv.className = "table-title"; tDiv.textContent = q.title;
+                    const mSub = document.createElement("small"); mSub.className = "muted"; mSub.textContent = q.course?.course_name || "Course";
+                    td1.append(tDiv, mSub);
+                    const td2 = document.createElement("td"); td2.textContent = modeLabel + " (" + (q.total_marks || 0) + " Marks)";
+                    const td3 = document.createElement("td"); td3.textContent = q.duration_minutes + " min";
+                    const td4 = document.createElement("td");
+                    const badge = document.createElement("span");
+                    badge.className = "status-badge " + (q.is_published ? "published" : "draft");
+                    badge.textContent = q.status;
+                    td4.appendChild(badge);
+                    const td5 = document.createElement("td");
+                    const grp = document.createElement("div"); grp.className = "action-group";
+                    const ed = document.createElement("button"); ed.type = "button"; ed.className = "small-button"; ed.textContent = "Edit / Questions"; ed.dataset.edit = String(q.quiz_id);
+                    grp.appendChild(ed);
+                    if (q.result_release_mode === "manual" && !q.results_released) {
+                        const relBtn = document.createElement("button");
+                        relBtn.type = "button";
+                        relBtn.className = "small-button";
+                        relBtn.textContent = q.results_released ? "Hide Results" : "Show Results";
+                        relBtn.style.background = q.results_released ? "#fef3c7" : "#dcfce7";
+                        relBtn.style.color = q.results_released ? "#92400e" : "#15803d";
+                        relBtn.dataset.release = String(q.quiz_id);
+                        grp.appendChild(relBtn);
+                    }
+                    const del = document.createElement("button"); del.type = "button"; del.className = "small-button danger"; del.textContent = "Delete"; del.dataset.delQuiz = String(q.quiz_id);
+                    grp.appendChild(del);
+                    td5.appendChild(grp);
+                    tr.append(td1, td2, td3, td4, td5);
+                    tbody.appendChild(tr);
+                });
+            }
+            function renderAll() {
+                $("statQuizzes").textContent = quizzesCache.length;
+                $("quizCount").textContent = quizzesCache.length + " quizzes";
+                const qSearch = $("quizSearch").value.trim().toLowerCase();
+                fillQuizzes($("quizRows"), quizzesCache.filter(x => x.title.toLowerCase().includes(qSearch)));
+                fillQuizzes($("recentQuizRows"), quizzesCache.slice(0, 5));
+                $("statQuestions").textContent = questionsCache.length;
+                const bSearch = $("questionSearch").value.trim().toLowerCase();
+                const bCourse = $("bankCourseFilter").value;
+                const filteredQ = questionsCache.filter(q => (!bCourse || String(q.course_id) === bCourse) && q.question_text.toLowerCase().includes(bSearch));
+                $("questionCount").textContent = filteredQ.length + " questions";
+                $("questionRows").replaceChildren();
+                filteredQ.forEach(q => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td");
+                    const div = document.createElement("div"); div.className = "table-title"; div.textContent = q.question_text;
+                    td1.appendChild(div);
+                    const td2 = document.createElement("td"); td2.textContent = q.course_name + " (" + (q.lecture_name || "Lecture 1") + ")";
+                    const td3 = document.createElement("td"); td3.textContent = q.question_type.toUpperCase();
+                    const td4 = document.createElement("td");
+                    const pill = document.createElement("span"); pill.className = "score-pill"; pill.textContent = String(q.marks);
+                    td4.appendChild(pill);
+                    const td5 = document.createElement("td");
+                    const actGrp = document.createElement("div"); actGrp.className = "action-group";
+                    const edBtn = document.createElement("button"); edBtn.type = "button"; edBtn.className = "small-button"; edBtn.textContent = "Edit"; edBtn.dataset.editQ = String(q.question_id);
+                    const del = document.createElement("button"); del.type = "button"; del.className = "small-button danger"; del.textContent = "Delete"; del.dataset.delQ = String(q.question_id);
+                    actGrp.append(edBtn, del);
+                    td5.appendChild(actGrp);
+                    tr.append(td1, td2, td3, td4, td5);
+                    $("questionRows").appendChild(tr);
+                });
+                $("statSubmissions").textContent = resultsCache.length;
+                $("statAverage").textContent = resultsCache.length ? Math.round(resultsCache.reduce((s, r) => s + Number(r.score || 0), 0) / resultsCache.length) + "%" : "—";
+                const rFilter = $("resultQuizFilter");
+                const prevR = rFilter.value;
+                rFilter.replaceChildren(new Option("All my quizzes", ""));
+                quizzesCache.forEach(q => rFilter.add(new Option(q.title, String(q.quiz_id))));
+                if (Array.from(rFilter.options).some(o => o.value === prevR)) rFilter.value = prevR;
+                const rSearch = $("resultSearch").value.trim().toLowerCase();
+                const filteredR = resultsCache.filter(r => (!rFilter.value || String(r.quiz_id) === rFilter.value) && ((r.quiz?.title || "") + " " + (r.user?.username || "")).toLowerCase().includes(rSearch));
+                $("resultCount").textContent = filteredR.length + " results";
+                $("resultRows").replaceChildren();
+                filteredR.forEach(r => {
+                    const tr = document.createElement("tr");
+                    const td1 = document.createElement("td"); td1.textContent = r.quiz?.title || "Quiz";
+                    const td2 = document.createElement("td"); td2.textContent = r.user?.username || "Student";
+                    const td3 = document.createElement("td");
+                    td3.textContent = r.is_flagged
+                        ? ("⚠ Flagged" + (r.latest_alert?.alert_type ? ": " + r.latest_alert.alert_type : ""))
+                        : "Clean";
+                    td3.style.color = r.is_flagged ? "#d14343" : "#16845b";
+                    td3.style.fontWeight = "600";
+                    const td4 = document.createElement("td"); td4.textContent = Math.round(r.score || 0) + "%";
+                    const td5 = document.createElement("td"); td5.textContent = r.ended_at ? new Date(r.ended_at).toLocaleDateString("en-CA") : "—";
+                    const td6 = document.createElement("td");
+                    const rev = document.createElement("button"); rev.type = "button"; rev.className = "small-button"; rev.textContent = "View / Grade Answers"; rev.dataset.review = String(r.attempt_id);
+                    td6.appendChild(rev);
+                    tr.append(td1, td2, td3, td4, td5, td6);
+                    $("resultRows").appendChild(tr);
+                });
+            }
+            async function loadAllData() {
+                try {
+                    const [c, qz, qs, res] = await Promise.all([apiRequest("/courses"), apiRequest("/instructor/quizzes"), apiRequest("/instructor/questions"), apiRequest("/instructor/results")]);
+                    coursesCache = c; quizzesCache = qz; questionsCache = qs; resultsCache = res;
+                    populateCourses(); renderAll();
+                } catch (e) { notify("Error: " + e.message); }
+            }
+            function setWizardStep(step) {
+                Array.of(1, 2, 3).forEach(n => {
+                    $("wizardStep" + n).classList.toggle("active", n === step);
+                    $("stepInd" + n).classList.toggle("active", n === step);
+                });
+                if (step === 3) renderWizardStep3();
+            }
+            function openWizard(quiz = null) {
+                activeWizardQuizId = quiz ? quiz.quiz_id : null;
+                $("wizardModalTitle").textContent = quiz ? "Edit Quiz: " + quiz.title : "Create Quiz (3-Step Wizard)";
+                $("wizTitle").value = quiz ? quiz.title : "";
+                if (quiz) $("wizCourse").value = String(quiz.course_id);
+                $("wizDuration").value = quiz ? quiz.duration_minutes : 30;
+                $("wizPass").value = quiz ? quiz.pass_percentage : 50;
+                $("wizFrom").value = quiz?.available_from ? quiz.available_from.slice(0, 16) : "";
+                $("wizUntil").value = quiz?.available_until ? quiz.available_until.slice(0, 16) : "";
+                $("wizExamMode").value = quiz ? (quiz.exam_mode || "fixed") : "fixed";
+                $("wizReleaseMode").value = quiz ? (quiz.result_release_mode || "immediate") : "immediate";
+                $("wizPerPage").value = quiz ? (quiz.questions_per_page || 1) : 1;
+                $("wizShowAnswers").value = quiz ? (quiz.show_answers ? "1" : "0") : "1";
+                $("wizBacktrack").value = quiz ? (quiz.allow_backtracking ? "1" : "0") : "1";
+                selectedWizardItems = [];
+                if (quiz?.attached_questions) {
+                    quiz.attached_questions.forEach(att => {
+                        const qObj = questionsCache.find(x => Number(x.question_id) === Number(att.question_id));
+                        if (qObj) selectedWizardItems.push({ question_id: qObj.question_id, question_text: qObj.question_text, question_type: qObj.question_type, marks: Number(att.marks || qObj.marks || 1) });
+                    });
+                }
+                setWizardStep(1);
+                $("quizWizardModal").classList.remove("hidden");
+            }
+            $("toStep2Btn").addEventListener("click", async () => {
+                const payload = {
+                    title: $("wizTitle").value.trim(),
+                    course_id: Number($("wizCourse").value),
+                    duration: Number($("wizDuration").value),
+                    passingScore: Number($("wizPass").value),
+                    available_from: $("wizFrom").value || null,
+                    available_until: $("wizUntil").value || null,
+                    exam_mode: $("wizExamMode").value,
+                    result_release_mode: $("wizReleaseMode").value,
+                    questions_per_page: Number($("wizPerPage").value) || 1,
+                    show_answers: $("wizShowAnswers").value === "1",
+                    allow_backtracking: $("wizBacktrack").value === "1"
+                };
+                if (!payload.title) return notify("Enter quiz title.");
+                try {
+                    if (activeWizardQuizId) await apiRequest("/instructor/quizzes/" + activeWizardQuizId, "PUT", payload);
+                    else {
+                        const created = await apiRequest("/instructor/quizzes", "POST", payload);
+                        activeWizardQuizId = created.quiz_id;
+                    }
+                    setWizardStep(2);
+                } catch (e) { notify(e.message); }
+            });
+            $("wizQType").addEventListener("change", () => {
+                const t = $("wizQType").value;
+                $("wizMcqBox").classList.toggle("hidden", t !== "mcq");
+                $("wizTfBox").classList.toggle("hidden", t !== "true_false");
+            });
+            $("wizAddQuestionBtn").addEventListener("click", async () => {
+                const t = $("wizQType").value, text = $("wizQText").value.trim(), marks = Number($("wizQMarks").value) || 1;
+                if (!text) return notify("Enter question text.");
+                try {
+                    const created = await apiRequest("/instructor/questions", "POST", {
+                        course_id: Number($("wizCourse").value),
+                        lecture_name: $("wizLecture").value.trim() || "Lecture 1",
+                        question_type: t, text, marks,
+                        options: t === "mcq" ? Array.of($("wizOptA").value, $("wizOptB").value, $("wizOptC").value, $("wizOptD").value) : [],
+                        correctAnswer: t === "mcq" ? $("wizCorrectMcq").value : (t === "true_false" ? $("wizCorrectTf").value : null)
+                    });
+                    questionsCache.unshift(created);
+                    selectedWizardItems.push({ question_id: created.question_id, question_text: created.question_text, question_type: created.question_type, marks });
+                    $("wizQText").value = "";
+                    notify("Question added to bank!");
+                } catch (e) { notify(e.message); }
+            });
+            function renderWizardStep3() {
+                const mode = $("wizExamMode").value;
+                const courseId = String($("wizCourse").value);
+                const courseQuestions = questionsCache.filter(q => String(q.course_id) === courseId);
+                $("poolConfigBox").classList.toggle("hidden", mode === "sectioned");
+                $("sectionedConfigBox").classList.toggle("hidden", mode !== "sectioned");
+                $("randomPoolOptions").classList.toggle("hidden", mode !== "random_pool");
+                if (mode === "sectioned") {
+                    const list = $("lectureSectionsList");
+                    list.replaceChildren();
+                    const lectures = Array.from(new Set(courseQuestions.map(q => q.lecture_name || "Lecture 1")));
+                    if (!lectures.length) { list.textContent = "No lectures/questions in this course yet."; return; }
+                    lectures.forEach(lec => {
+                        const maxQ = courseQuestions.filter(q => (q.lecture_name || "Lecture 1") === lec).length;
+                        const row = document.createElement("div");
+                        row.className = "selected-q-item";
+                        row.dataset.lecture = lec;
+                        const left = document.createElement("div");
+                        left.textContent = lec + " (Available: " + maxQ + " Qs)";
+                        const right = document.createElement("div");
+                        right.style.cssText = "display:flex;gap:8px;align-items:center;";
+                        const cInp = document.createElement("input");
+                        cInp.type = "number"; cInp.className = "sec-count"; cInp.min = "0"; cInp.max = String(maxQ); cInp.value = String(Math.min(2, maxQ)); cInp.style.width = "60px";
+                        const mInp = document.createElement("input");
+                        mInp.type = "number"; mInp.className = "sec-marks"; mInp.min = "0.5"; mInp.step = "0.5"; mInp.value = "2"; mInp.style.width = "60px";
+                        right.append("Draw:", cInp, "Marks:", mInp);
+                        row.append(left, right);
+                        list.appendChild(row);
+                    });
+                    return;
+                }
+                const bankPool = $("wizBankPool"), selPool = $("wizSelectedPool");
+                bankPool.replaceChildren(); selPool.replaceChildren();
+                courseQuestions.forEach(q => {
+                    const already = selectedWizardItems.some(s => Number(s.question_id) === Number(q.question_id));
+                    const row = document.createElement("div");
+                    row.className = "selected-q-item";
+                    const info = document.createElement("div"); info.style.fontSize = "12px"; info.textContent = "[" + (q.lecture_name || "L1") + "] " + q.question_text;
+                    const btn = document.createElement("button");
+                    btn.type = "button"; btn.className = "small-button"; btn.textContent = already ? "Added ✓" : "+ Add"; btn.disabled = already;
+                    btn.addEventListener("click", () => { selectedWizardItems.push({ question_id: q.question_id, question_text: q.question_text, question_type: q.question_type, marks: Number(q.marks || 1) }); renderWizardStep3(); });
+                    row.append(info, btn);
+                    bankPool.appendChild(row);
+                });
+                selectedWizardItems.forEach((item, idx) => {
+                    const row = document.createElement("div");
+                    row.className = "selected-q-item";
+                    const info = document.createElement("div"); info.style.cssText = "flex:1;font-size:12px;"; info.textContent = "#" + (idx + 1) + " " + item.question_text;
+                    const ctrl = document.createElement("div"); ctrl.style.cssText = "display:flex;gap:4px;";
+                    const mInp = document.createElement("input"); mInp.type = "number"; mInp.min = "0.5"; mInp.step = "0.5"; mInp.value = String(item.marks); mInp.style.cssText = "width:55px;padding:4px;";
+                    mInp.addEventListener("change", e => { item.marks = Number(e.target.value) || 1; });
+                    const up = document.createElement("button"); up.type = "button"; up.className = "small-button"; up.textContent = "↑";
+                    up.addEventListener("click", () => { if (idx > 0) { const t = selectedWizardItems.at(idx - 1); selectedWizardItems.splice(idx - 1, 2, item, t); renderWizardStep3(); } });
+                    const dn = document.createElement("button"); dn.type = "button"; dn.className = "small-button"; dn.textContent = "↓";
+                    dn.addEventListener("click", () => { if (idx < selectedWizardItems.length - 1) { const n = selectedWizardItems.at(idx + 1); selectedWizardItems.splice(idx, 2, n, item); renderWizardStep3(); } });
+                    const rm = document.createElement("button"); rm.type = "button"; rm.className = "small-button danger"; rm.textContent = "×";
+                    rm.addEventListener("click", () => { selectedWizardItems.splice(idx, 1); renderWizardStep3(); });
+                    ctrl.append(mInp, up, dn, rm);
+                    row.append(info, ctrl);
+                    selPool.appendChild(row);
+                });
+            }
+            async function finalizeWizard(publishFlag) {
+                const mode = $("wizExamMode").value;
+                const typeOrder = $("wizTypeOrder").value;
+                let payloadRules = { type_order: typeOrder };
+
+                if (mode === "sectioned") {
+                    const rules = [];
+                    document.querySelectorAll("#lectureSectionsList .selected-q-item").forEach(row => {
+                        const count = Number(row.querySelector(".sec-count").value) || 0;
+                        const marks_each = Number(row.querySelector(".sec-marks").value) || 1;
+                        if (count > 0) rules.push({ lecture: row.dataset.lecture, count, marks_each });
+                    });
+                    if (publishFlag && !rules.length) return notify("Select at least 1 question from a lecture.");
+                    payloadRules.sections = rules;
+                } else {
+                    if (publishFlag && !selectedWizardItems.length) return notify("Add at least 1 question before publishing.");
+                    if (mode === "random_pool") {
+                        payloadRules.random_count = Number($("wizRandomCount").value) || 1;
+                        payloadRules.marks_each = Number($("wizRandomMarks").value) || 1;
+                    }
+                }
+
+                try {
+                    await apiRequest("/instructor/quizzes/" + activeWizardQuizId + "/questions", "POST", {
+                        items: selectedWizardItems.map(i => ({ question_id: i.question_id, marks: i.marks })),
+                        is_published: publishFlag,
+                        section_rules: JSON.stringify(payloadRules)
+                    });
+                    $("quizWizardModal").classList.add("hidden");
+                    notify(publishFlag ? "Quiz published!" : "Quiz saved as draft.");
+                    loadAllData();
+                } catch (e) { notify(e.message); }
+            }
+
+            $("saveDraftBtn").addEventListener("click", () => finalizeWizard(false));
+            $("savePublishBtn").addEventListener("click", () => finalizeWizard(true));
+            $("backToStep1Btn").addEventListener("click", () => setWizardStep(1));
+            $("toStep3Btn").addEventListener("click", () => setWizardStep(3));
+            $("backToStep2Btn").addEventListener("click", () => setWizardStep(2));
+            $("bankQType").addEventListener("change", () => {
+                const t = $("bankQType").value;
+                $("bankMcqBox").classList.toggle("hidden", t !== "mcq");
+                $("bankTfBox").classList.toggle("hidden", t !== "true_false");
+            });
+            function openQuestionModal(q = null) {
+                $("questionForm").reset();
+                $("editingQuestionId").value = q ? String(q.question_id) : "";
+                $("questionModalTitle").textContent = q ? "Edit Question" : "Add Question";
+                if (q) {
+                    $("bankQCourse").value = String(q.course_id);
+                    $("bankQLecture").value = q.lecture_name || "Lecture 1";
+                    $("bankQType").value = q.question_type || "mcq";
+                    $("bankQMarks").value = String(q.marks || 1);
+                    $("newQuestionText").value = q.question_text || "";
+                    if (q.question_type === "mcq" && Array.isArray(q.options)) {
+                        const inputs = Array.of("optionA", "optionB", "optionC", "optionD");
+                        const letters = Array.of("A", "B", "C", "D");
+                        q.options.forEach((opt, idx) => {
+                            if (inputs.at(idx)) $(inputs.at(idx)).value = opt.option_text || "";
+                            if (opt.is_correct && letters.at(idx)) $("correctOption").value = letters.at(idx);
+                        });
+                    } else if (q.question_type === "true_false" && Array.isArray(q.options)) {
+                        const correctOpt = q.options.find(o => o.is_correct);
+                        $("bankCorrectTf").value = (correctOpt && correctOpt.option_text.toLowerCase() === "false") ? "false" : "true";
+                    }
+                }
+                const t = $("bankQType").value;
+                $("bankMcqBox").classList.toggle("hidden", t !== "mcq");
+                $("bankTfBox").classList.toggle("hidden", t !== "true_false");
+                $("questionModal").classList.remove("hidden");
+            }
+            $("questionForm").addEventListener("submit", async e => {
+                e.preventDefault();
+                const editId = $("editingQuestionId").value;
+                const t = $("bankQType").value;
+                const payload = {
+                    course_id: Number($("bankQCourse").value),
+                    lecture_name: $("bankQLecture").value.trim() || "Lecture 1",
+                    question_type: t,
+                    text: $("newQuestionText").value.trim(),
+                    marks: Number($("bankQMarks").value) || 1,
+                    options: t === "mcq" ? Array.of($("optionA").value, $("optionB").value, $("optionC").value, $("optionD").value) : [],
+                    correctAnswer: t === "mcq" ? $("correctOption").value : (t === "true_false" ? $("bankCorrectTf").value : null)
+                };
+                try {
+                    await apiRequest(editId ? "/instructor/questions/" + editId : "/instructor/questions", editId ? "PUT" : "POST", payload);
+                    $("questionForm").reset();
+                    $("editingQuestionId").value = "";
+                    $("questionModal").classList.add("hidden");
+                    notify(editId ? "Question updated!" : "Question saved!");
+                    loadAllData();
+                } catch (err) { notify(err.message); }
+            });
+            $("addCourseBtn").addEventListener("click", async () => {
+                const name = prompt("Enter new course name:");
+                if (!name || !name.trim()) return;
+                try { await apiRequest("/courses", "POST", { course_name: name.trim() }); notify("Course added!"); loadAllData(); } catch (e) { notify(e.message); }
+            });
+            document.addEventListener("click", async e => {
+                if (e.target.dataset.edit) { const q = quizzesCache.find(x => String(x.quiz_id) === e.target.dataset.edit); if (q) openWizard(q); }
+                if (e.target.dataset.editQ) { const q = questionsCache.find(x => String(x.question_id) === e.target.dataset.editQ); if (q) openQuestionModal(q); }
+                if (e.target.dataset.release && confirm("Change result visibility for students?")) {
+                    const res = await apiRequest("/instructor/quizzes/" + e.target.dataset.release + "/release-results", "POST");
+                    notify(res.message);
+                    loadAllData();
+                }
+                if (e.target.dataset.delQuiz && confirm("Delete quiz?")) { await apiRequest("/instructor/quizzes/" + e.target.dataset.delQuiz, "DELETE"); loadAllData(); }
+                if (e.target.dataset.delQ && confirm("Delete question?")) { await apiRequest("/instructor/questions/" + e.target.dataset.delQ, "DELETE"); loadAllData(); }
+                if (e.target.dataset.review) { sessionStorage.setItem("selectedAttemptId", e.target.dataset.review); window.location.href = "review.html"; }
+            });
+            document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
+                const v = b.dataset.view;
+                document.querySelectorAll(".view").forEach(s => s.classList.toggle("active", s.id === "view-" + v));
+                document.querySelectorAll(".nav-link").forEach(n => n.classList.toggle("active", n.dataset.view === v));
+                $("pageTitle").textContent = v.charAt(0).toUpperCase() + v.slice(1);
+                loadAllData();
+            }));
+            document.querySelectorAll('[data-action="create-quiz"]').forEach(b => b.addEventListener("click", () => openWizard(null)));
+            document.querySelectorAll('[data-action="add-question"]').forEach(b => b.addEventListener("click", () => openQuestionModal(null)));
+            document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => $(b.dataset.close).classList.add("hidden")));
+            Array.of("quizSearch", "questionSearch", "resultSearch").forEach(id => $(id).addEventListener("input", renderAll));
+            Array.of("bankCourseFilter", "resultQuizFilter").forEach(id => $(id).addEventListener("change", renderAll));
+            $("profileForm").addEventListener("submit", async e => {
+                e.preventDefault();
+                const updated = await apiRequest("/profile", "PUT", { name: $("profileName").value.trim() });
+                sessionStorage.setItem("currentUser", JSON.stringify(updated));
+                $("userName").textContent = updated.name;
+                $("profileMessage").textContent = "Profile updated.";
+            });
+            $("logoutButton").addEventListener("click", logoutUser);
+            loadAllData();
+        })();
+    </script>
+    <script src="lang.js"></script>
+</body>
+
+</html>

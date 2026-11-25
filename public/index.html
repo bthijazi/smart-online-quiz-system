@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Quiz | Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="logo.css">
+    <link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img
+                src="images/logo.png"
+                alt="Smart Quiz Logo"
+                class="project-logo project-logo-large"
+            >
+        </div>
+
+        <h1>Smart Quiz</h1>
+        <p class="subtitle">Sign in to your examination portal</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-button">Sign In</button>
+            <p id="loginMessage" role="alert" aria-live="polite"></p>
+        </form>
+
+        <p class="footer">Smart Online Quiz System &copy; 2026</p>
+
+        <details>
+            <summary>Demo accounts for testing</summary>
+
+            <p>Student: student@smartquiz.com</p>
+            <p>Password: Student123</p>
+            <hr>
+
+            <p>Instructor: instructor@smartquiz.com</p>
+            <p>Password: Instructor123</p>
+            <hr>
+
+            <p>Admin: admin@smartquiz.com</p>
+            <p>Password: Admin123</p>
+        </details>
+    </div>
+
+   <script src="api.js"></script>
+<script>
+    "use strict";
+
+    const loginForm = document.getElementById("loginForm");
+    const loginMessage = document.getElementById("loginMessage");
+
+    function getPageByRole(role) {
+        const pages = {
+            student: "dashboard.html",
+            instructor: "instructor-dashboard.html",
+            admin: "admin-dashboard.html"
+        };
+        return pages[role] || null;
+    }
+
+    loginForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        loginMessage.textContent = "Signing in...";
+        loginMessage.style.color = "#2563eb";
+
+        const email = document.getElementById("email").value.trim().toLowerCase();
+        const password = document.getElementById("password").value;
+
+        try {
+            const response = await apiRequest("/login", "POST", { email, password });
+
+            const destination = getPageByRole(response.user.role);
+            if (!destination) {
+                loginMessage.textContent = "Invalid account role.";
+                loginMessage.style.color = "#dc2626";
+                return;
+            }
+
+            sessionStorage.setItem("authToken", response.token);
+            sessionStorage.setItem("currentUser", JSON.stringify(response.user));
+
+            window.location.href = destination;
+        } catch (error) {
+            loginMessage.textContent = error.message || "Incorrect email or password.";
+            loginMessage.style.color = "#dc2626";
+        }
+    });
+</script>
+
+</body>
+</html>
