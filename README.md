@@ -31,7 +31,7 @@ An intelligent, bilingual (**English / Arabic RTL**) web-based examination and a
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 * **Backend:** PHP 8+, Laravel Framework, Laravel Sanctum (API Authentication)
 * **Database:** MySQL (`soqs_proj_db`)
 * **AI Service:** Python 3, Flask, Scikit-Learn (`DecisionTreeClassifier`)
