@@ -43,7 +43,7 @@ An intelligent, bilingual (**English / Arabic RTL**) web-based examination and a
 
 ### 1. Clone the Repository
 ```bash
-git clone -b "backend&ai" https://github.com
+git clone -b "backend-ai" https://github.com
 cd smart-online-quiz-system
 ```
 
